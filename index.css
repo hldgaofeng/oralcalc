@@ -1,0 +1,33 @@
+body, table, button, select, input {
+    font-size: 22px;
+    font-family: 宋体;
+}
+
+
+@media print {
+    @page {
+            size: 210mm 297mm;  /* or size: 794px 1123px;   */
+            size: 297mm 420mm;  /* or size: 1123px 1588px;  */
+    }
+    div.noprint {
+        display:none;
+    }
+    div.print-repeat {
+
+    }
+}
+
+.cmdbar {
+    display: inline-block;
+}
+.cmdbar label {
+    display: block;
+    margin: 5px;
+}
+
+.cmdbar input, .cmdbar select {
+    text-align:right;
+}
+
+tr.break_before { page-break-before: always; }
+tr.break_after { page-break-after: always; }

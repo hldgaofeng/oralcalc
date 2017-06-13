@@ -1,0 +1,127 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=9">
+    <title>口算题生成程序</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="vue.min.js"></script>
+</head>
+<body>
+<!--[if IE]>
+<OBJECT id="WebBrowser" height="0" width="0" classid="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"  VIEWASTEXT>  </OBJECT>
+<![endif]-->
+<!--
+<input onclick="document.all.WebBrowser.ExecWB(6,1)" type="button" value="打印">
+<input onclick="document.all.WebBrowser.ExecWB(6,6)" type="button" value="直接打印">
+<input onclick="document.all.WebBrowser.ExecWB(8,1)" type="button" value="页面设置">
+<input onclick="document.all.WebBrowser.ExecWB(7,1)" type="button" value="打印预览">
+-->
+<div id="app">
+    <div class="cmdbar noprint">
+        <table>
+            <caption>参数配置：</caption>
+            <tbody>
+                <tr>
+                    <td>总题数：</td>
+                    <td><input type="number" name="count" v-model="count" style="width:5em"/></td>
+                </tr>
+                <!--[if IE]>
+                <tr>
+                    <td>每页行数(IE)：</td>
+                    <td><input type="number" name="count" v-model="pagerows" style="width:5em"/></td>
+                </tr>
+                <![endif]-->
+                <tr>
+                    <td>列数：</td>
+                    <td><input type="number" name="cols" v-model="cols" style="width:5em"/></td>
+                </tr>
+                <tr>
+                    <td>运算方式：</td>
+                    <td><select name="type" v-model="type">
+                        <option value="+">仅加法</option>
+                        <option value="-">仅减法</option>
+                        <option value="" selected>加减法混合</option>
+                    </select></td>
+                </tr>
+                <tr>
+                    <td>借/进位设置：</td>
+                    <td><select name="borrow" v-model="borrow">
+                        <option value="no">不带借/进位</option>
+                        <option value="all">强制带借/进位</option>
+                        <option value="random" selected>不指定</option>
+                    </select></td>
+                </tr>
+                <tr>
+                    <td>运算项个数：</td>
+                    <td>
+                        <input type="number" v-model="itemcount" style="width:5em"/> 个
+                    </td>
+                </tr>
+                <tr v-for="(rg, i) in range">
+                    <td>数值{{i+1}}范围：</td>
+                    <td>
+                        <input type="number" style="width:5em" v-model="rg.min"/> -
+                        <input type="number" v-model="rg.max" style="width:5em"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>运算规则：</td>
+                    <td><select name="rule" v-model="rule">
+                        <option value="1">已知条件，求得数</option>
+                        <option value="2">已知得数，求条件</option>
+                    </select></td>
+                </tr>
+                <tr>
+                    <td>快捷方式：</td>
+                    <td><select name="level">
+                        <option value="20">20 以内整数加减法</option>
+                        <option value="100n">100 以内加减法不进/借位</option>
+                        <option value="100+1">100 以内进位加法(1 位数)</option>
+                        <option value="100+2">100 以内进位加法(2 位数)</option>
+                        <option value="100-1">100 以内借位减法(1 位数)</option>
+                        <option value="100-2">100 以内借位减法(2 位数)</option>
+                        <option value="100+-">100 以内连加连减</option>
+                    </select></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button @click="doGen">生成！</button>
+        <!--[if IE]>
+        <input onclick="document.all.WebBrowser.ExecWB(7,1)" type="button" value="打印预览">
+        <![endif]-->
+        <button @click="doPrint">打印</button>
+    </div>
+    <table width="98%" :cellPadding="cellPadding" :cellSpacing="cellSpacing">
+        <thead style="display:table-header-group;">
+            <tr>
+                <th :colspan="cols">
+                    <div class="print-repeat">
+                       <h3>口算（100以内加减法混合运算）</h3>
+                        姓名：__________ 日期：____月____日 时间：________ 对题：____道
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr :class="{break_after: n > 0 && n % pagerows == 0}"  v-for="n in parseInt((res.length + (cols-0) - 1) / cols) ">
+                <td v-for="k in (cols-0)">
+                    <template v-if="(n-1) * cols + k - 1 < res.length">
+                        <span v-for="o in res[ (n-1) * cols +k -1].li">{{o}}</span>
+                    </template>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot style="display:table-footer-group;">
+            <tr>
+                <th :colspan="cols">
+                    <div class="print-repeat">
+                    </div>
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<script src="index.js"></script>
+</body>
+</html>
