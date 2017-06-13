@@ -18,7 +18,10 @@ body, table, button, select, input {
 }
 
 .cmdbar {
-    display: inline-block;
+    background-color: lightgray;
+}
+.cmdbar form {
+    display:inline-block;
 }
 .cmdbar label {
     display: block;
