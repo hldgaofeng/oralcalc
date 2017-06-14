@@ -169,11 +169,25 @@ var app = new Vue({
                     res_ge.push( '+' == op ? (ge + j) % 10 : (ge + 10 - j) % 10);
                 }
 
+				// @todo: 考虑一下加数或减数的设定范围 ...
+				//        当被加/减数和运算符确定后，实际上根据加/减数可以求出一个和的范围
+				//
+
+				// 根据已知的被加/减数、加/减数范围得到得数的范围，然后和用户设置的得数范围合并
+				var rgc = {min: eval(r + op + this.range[i].min), max: eval(r + op + this.range[i].max)};
+				var rgarr = [rgc.min-0, rgc.max-0, this.result.min-0, this.result.max-0].sort(function(a, b){
+					return a - b;
+				});
+				// 取两个范围相交的部分
+				var rgr = {min: rgarr[1], max: rgarr[2]};
+				//console.log('rgr =', rgr, rgarr);
+
+
                 // 先随机算出得数，再根据得数算出加数/减数 ...
                 if( '+' == op ) {
-                    // 加法结果：被加数 ~ result.max
-                    min = Math.max(r, this.result.min);
-                    max = this.result.max;
+                    // 加法结果：被加数 ~ rgr.max
+                    min = Math.max(r, rgr.min);
+                    max = rgr.max;
                     if( min > max ) {
                         console.error('错误：无法保证加法得数在设定范围内！');
                         max = min;
@@ -184,9 +198,9 @@ var app = new Vue({
                 }
 
                 if( '-' == op ) {
-                    // 减法结果：result.min ~ 被减数
-                    min = Math.max(0, this.result.min);
-                    max = Math.min(r, this.result.max);
+                    // 减法结果：rgr.min ~ 被减数
+                    min = Math.max(0, rgr.min);
+                    max = Math.min(r, rgr.max);
                     if( min > max ) {
                         console.error('错误：无法保证减法得数在设定范围内！');
                         min = max;
