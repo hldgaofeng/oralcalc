@@ -24,11 +24,12 @@ var app = new Vue({
     el: '#app',
     data: {
         count: 100,
-        pagerows: 10,
+        pagerows: 20,
         cols: 4,
         type: '',
         level: '20',
         rule: '1',
+        whichcond: '',
         itemcount: 0,
         defrange: {min: 0, max:100},
         result: {min: 0, max:100},
@@ -36,9 +37,10 @@ var app = new Vue({
         borrow: 'random',
         fontsize: 22,
         fontfamily: '宋体',
-        cellPadding: 10,
-        cellSpacing: 10,
+        cellPadding: 6,
+        cellSpacing: 8,
         res: [],
+        appendemptyrows: false,
         report: {
             total: 0,
             addcnt: 0, // 加法题数量
@@ -77,16 +79,19 @@ var app = new Vue({
         },
 
         isValid: function(){
-            if(this.result.max < this.result.min ) {
+            if(this.result.max - 0 < this.result.min - 0 ) {
                 alert('得数范围无效！');
                 return false;
             }
             for(var i = 0; i < this.itemcount; i ++) {
-                if( this.range[i].max < this.range[i].min ) {
+                if( this.range[i].max - 0 < this.range[i].min - 0 ) {
                     alert('数值' +(i+1)+'范围无效！');
                     return false;
                 }
             }
+
+            // @todo 其它非法检测 ...
+
             return true;
         },
 
@@ -98,10 +103,7 @@ var app = new Vue({
             // 3. 强制借位减法时，被减数个位必须不能为 9，并且不能小于 10，否则无法产生借位
             // 4. 强制借位减法时，首先必须保证被减数个位小于减数的个位，其次也必须保证减数总体小于被减数，以免产生负数
 
-            // @todo 当强制借/进位时，需要保证数值在限定范围内? 如果限定范围内无法保证呢？
-            // @todo 需要检查参数合法性，比如范围要合法，结果范围必须在合理范围内 ...
-
-            var w = randomInt(0, this.itemcount -1); // 已知得数，随机求某一个条件
+            var w = ''===this.whichcond ?  randomInt(0, this.itemcount -1) : this.whichcond - 0; // 已知得数，随机求某一个条件
             var min = this.range[0].min, max = this.range[0].max, limit, isexcept = false, isborrow = false;
             var op = this.op(), t, r, res;
 
@@ -118,13 +120,14 @@ var app = new Vue({
             if( '+' == op ) {
                 // 加法：数值 1 的最小值都超过了得数允许的最大值，则无法使用加法
                 if( min > this.result.max ) {
+                    // 未限制运算符？尝试变更运算符。
                     if( '' == this.type ) {
-                        console.warn('被加数范围超出得数允许的最大范围，智能变更为减法！')
+                        console.warn('被加数最小值超出了得数允许的最大范围，将智能变更为减法！')
                         op = '-';
                         r = randomInt(min, max, limit);
                     } else {
                         isexcept = true;
-                        console.error('错误：被加数范围超出得数允许的最大范围！')
+                        console.error('错误：被加数最小值超出了得数允许的最大范围！')
                     }
                 } else {
                     // 被加数不能超过结果允许的最大值
@@ -136,12 +139,12 @@ var app = new Vue({
                 // 减法：必须保证被减数不可小于允许结果的最小值
                 if( max < this.result.min ) {
                     if( '' == this.type ) {
-                        console.warn('被减数范围超出得数允许的最小范围，智能变更为加法！')
+                        console.warn('被减数最大值比得数允许的最小范围还要小，智能变更为加法！')
                         op = '+';
                         r = randomInt(min, max, limit);
                     } else {
                         isexcept = true;
-                        console.error('错误：被减数范围超出得数允许的最小范围！')
+                        console.error('错误：被减数最大值比得数允许的最小范围还要小！')
                     }
                 } else {
                     min = Math.max(min, this.result.min);
@@ -149,49 +152,22 @@ var app = new Vue({
                 }
             }
 
-            // 如果前面无法生成合法值，这里就直接按数值1范围生成随机值即可！因为无论如何它将是一个异常的值！
+            // 如果前面无法生成合法的数值，这里就直接按数值 1 限定范围生成随机数即可！因为无论如何它将是一个异常的值！
             if( 'undefined' == typeof(r) ) {
                 r = randomInt(this.range[0].min, this.range[0].max, limit);
             }
 
-            var arr = [];
-            arr.push(r);
-
             // 已知得数，求条件，且第一个数就是被求的条件? 则将该数使用空白代替！
-            if( '2' == this.rule && 0 == w ) {
-                arr[0] = this.blank();
-            }
-
+            var arr = [ ('2' == this.rule && 0 == w ) ? this.blank() : r ];
             for(var i = 1; i < this.itemcount; i ++, op = this.op()) {
 
-                // 运算符号
-                arr.push(op);
-
-                // 强制借/进位时，因为被加/减数的个位已经确定，所以加数的个位也确定了
-                var ge = r % 10;
-                var new_ge = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-                if( 'all' == this.borrow) {
-                    // 强制借/进位
-                    if('+' == op) {
-                        for(var j = 10 - ge, new_ge = []; j <= 9; j++) new_ge.push(j);
-                    } else if( '-' == op) {
-                        for(var j = ge + 1, new_ge = []; j <= 9; j++) new_ge.push(j);
-                    }
-                } else if('no' == this.borrow) {
-                    // 强制不借/进位
-                    if('+' == op) {
-                        for(var j= 0, new_ge = []; j <= 9 - ge; j++) new_ge.push(j);
-                    } else if( '-' == op) {
-                        for(var j = 0, new_ge = []; j <= ge; j++) new_ge.push(j);
-                    }
+                // 强制借/进位时，因为被加/减数的个位已经确定，所以加数的个位取值范围也确定了
+                var ge = r % 10, res_ge = [];
+                min = ('all' == this.borrow) ? ('+' == op ? 10 - ge : ge + 1) : 0; // 强制借/进位
+                max = ('no' == this.borrow) ? ('+' == op ? 9 - ge : ge) : 9; // 强制不借/进位
+                for(var j = min; j <= max; j++) {
+                    res_ge.push( '+' == op ? (ge + j) % 10 : (ge + 10 - j) % 10);
                 }
-
-                var res_ge = [];
-                for(var j= 0; j < new_ge.length; j++) {
-                    if('+' == op) res_ge.push((ge + new_ge[j]) % 10);
-                    else res_ge.push((ge + 10 - new_ge[j]) % 10);
-                }
-
 
                 // 先随机算出得数，再根据得数算出加数/减数 ...
                 if( '+' == op ) {
@@ -221,7 +197,7 @@ var app = new Vue({
                 }
 
                 if( t < this.range[i].min || t > this.range[i].max) {
-                    console.error('错误：加数/减数超出范围！');
+                    console.error('错误：为保证得数在范围内，加数/减数将超出范围！', t, this.range[i].min, this.range[i].max);
                     isexcept = true;
                 }
 
@@ -236,25 +212,20 @@ var app = new Vue({
                     }
                 }
 
-                if( '+' == op && r % 10 + t % 10 >= 10) isborrow = true;
-                if( '-' == op && r % 10 < t % 10) isborrow = true;
+                if( '+' == op && r % 10 + t % 10 >= 10) isborrow = true; // 有进位
+                if( '-' == op && r % 10 < t % 10) isborrow = true; // 有借位
 
-                // 已知得数，求条件
-                if( '2' == this.rule && i == w ) {
-                    arr.push(this.blank());
-                } else {
-                    arr.push(t);
-                }
+                // 已知得数，求条件时，将条件换成空白
+                arr.push(op); // 运算符号
+                arr.push(( '2' == this.rule && i == w ) ? this.blank() : t);
+
+                // 计算得数
                 r = eval(r + op + t);
             }
 
+            // 得数
             arr.push('=');
-
-            if( '2' == this.rule ) {
-                arr.push(r);
-            }else {
-                arr.push(this.blank());
-            }
+            arr.push(( '2' == this.rule ) ? r : this.blank())
 
             this.report.addcnt += '+' == op ? 1 : 0;
             this.report.subcnt += '-' == op ? 1 : 0;

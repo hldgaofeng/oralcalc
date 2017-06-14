@@ -8,7 +8,7 @@
 </head>
 <body>
 <!--[if IE]>
-<OBJECT id="WebBrowser" height="0" width="0" classid="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2" VIEWASTEXT></OBJECT>
+<OBJECT id="WebBrowser" height="0" width="0" classid="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2" VIEWASTEXT style="display:none"></OBJECT>
 <![endif]-->
 <!--
 <input onclick="document.all.WebBrowser.ExecWB(6,1)" type="button" value="打印">
@@ -16,7 +16,7 @@
 <input onclick="document.all.WebBrowser.ExecWB(8,1)" type="button" value="页面设置">
 <input onclick="document.all.WebBrowser.ExecWB(7,1)" type="button" value="打印预览">
 -->
-<div id="app">
+<div id="app" v-cloak>
     <div class="cmdbar noprint">
         <form>
             <fieldset>
@@ -27,12 +27,17 @@
                         <td>总题数：</td>
                         <td><input type="number" name="count" v-model="count" style="width:5em"/></td>
                     </tr>
-                    <!--[if IE]>
                     <tr>
                         <td>每页行数(IE)：</td>
-                        <td><input type="number" name="count" v-model="pagerows" style="width:5em"/></td>
+                        <td><input type="number" name="count" v-model="pagerows" style="width:5em"/>
+                            {{parseInt((res.length + (cols-0) - 1) / (cols-0))}}行,
+                            {{parseInt(((parseInt(res.length + (cols-0) - 1) / (cols-0)) + (pagerows - 1)) / (pagerows - 0))}}页
+                        </td>
                     </tr>
-                    <![endif]-->
+                    <tr>
+                        <td>尾部补空行：</td>
+                        <td><input type="checkbox" v-model="appendemptyrows"/></td>
+                    </tr>
                     <tr>
                         <td>列数：</td>
                         <td><input type="number" name="cols" v-model="cols" style="width:5em"/></td>
@@ -89,7 +94,14 @@
                         <td><select name="rule" v-model="rule">
                             <option value="1">已知条件，求得数</option>
                             <option value="2">已知得数，求条件</option>
-                        </select></td>
+                        </select>
+                            <select v-if="'2'==rule" v-model="whichcond">
+                                <option value="">随机求条件</option>
+                                <template v-for="(rg, i) in range">
+                                    <option :value="i">求条件 {{i+1}}</option>
+                                </template>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td>借/进位设置：</td>
@@ -134,7 +146,7 @@
             合计：{{res.length}}，加法：{{report.addcnt}}，减法：{{report.subcnt}}，借/进位：{{report.borrowcnt}}，异常：{{report.exceptcnt}}
         </div>
     </div>
-    <table :style="{fontFamily:fontfamily, fontSize:fontsize+'px'}" width="98%" :cellPadding="cellPadding" :cellSpacing="cellSpacing">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0">
         <thead style="display:table-header-group;">
         <tr>
             <th :colspan="cols">
@@ -146,12 +158,19 @@
         </tr>
         </thead>
         <tbody>
-        <tr :class="{break_after: n > 0 && n % pagerows == 0}"
-            v-for="n in parseInt((res.length + (cols-0) - 1) / cols) ">
-            <td v-for="k in (cols-0)">
-                <template v-if="(n-1) * cols + k - 1 < res.length">
-                    <span v-for="o in res[ (n-1) * cols +k -1].li">{{o}}</span>
-                </template>
+        <tr :class="{break_before:p>1}" v-for="p in parseInt(((parseInt(res.length + (cols-0) - 1) / (cols-0)) + (pagerows - 1)) / (pagerows - 0)) ">
+            <td style="border: 1px solid;">
+                <table :style="{fontFamily:fontfamily, fontSize:fontsize+'px'}" width="100%"  :cellPadding="cellPadding" :cellSpacing="cellSpacing">
+                    <tr v-for="r in (appendemptyrows ? (pagerows - 0) : Math.min(pagerows, parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))))"
+                        :class="{printonly: r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))}">
+                        <td v-for="c in (cols-0)">
+                            <template v-if="r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))">&nbsp;</template>
+                            <template v-if="(p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1) < res.length">
+                                <span v-for="o in res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li">{{o}}</span>
+                            </template>
+                        </td>
+                    </tr>
+                </table>
             </td>
         </tr>
         </tbody>

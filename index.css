@@ -1,9 +1,19 @@
 body, table, button, select, input {
-    font-size: 22px;
+    font-size: 16px;
     font-family: 宋体;
 }
 
+body {
+    padding:0px;
+    margin: 0px;
+}
 
+[v-cloak] {
+    display:none;
+}
+tr.printonly {
+    display:none;
+}
 @media print {
     @page {
             size: 210mm 297mm;  /* or size: 794px 1123px;   */
@@ -11,6 +21,9 @@ body, table, button, select, input {
     }
     div.noprint {
         display:none;
+    }
+    tr.printonly {
+        display:table-row;
     }
     div.print-repeat {
 
