@@ -30,8 +30,8 @@
                     <tr>
                         <td>每页行数(IE)：</td>
                         <td><input type="number" name="count" v-model="pagerows" style="width:5em"/>
-                            {{parseInt((res.length + (cols-0) - 1) / (cols-0))}}行,
-                            {{parseInt(((parseInt(res.length + (cols-0) - 1) / (cols-0)) + (pagerows - 1)) / (pagerows - 0))}}页
+                            共 {{parseInt((res.length + (cols-0) - 1) / (cols-0))}} 行
+                            {{parseInt(((parseInt(res.length + (cols-0) - 1) / (cols-0)) + (pagerows - 1)) / (pagerows - 0))}} 页
                         </td>
                     </tr>
                     <tr>
@@ -152,14 +152,14 @@
             <th :colspan="cols">
                 <div class="print-repeat" contenteditable="true">
                     <h3>口算（100以内加减法混合运算）</h3>
-                    姓名：__________ 日期：____月____日 时间：________ 对题：____道
+                    姓名：__________ 日期：____月____日 时间：________ 对题：____道<br/><br/>
                 </div>
             </th>
         </tr>
         </thead>
         <tbody>
         <tr :class="{break_before:p>1}" v-for="p in parseInt(((parseInt(res.length + (cols-0) - 1) / (cols-0)) + (pagerows - 1)) / (pagerows - 0)) ">
-            <td style="border: 1px solid;">
+            <td style="border: 0px solid;">
                 <table :style="{fontFamily:fontfamily, fontSize:fontsize+'px'}" width="100%"  :cellPadding="cellPadding" :cellSpacing="cellSpacing">
                     <tr v-for="r in (appendemptyrows ? (pagerows - 0) : Math.min(pagerows, parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))))"
                         :class="{printonly: r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))}">
