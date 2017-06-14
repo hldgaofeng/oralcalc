@@ -107,6 +107,28 @@ var app = new Vue({
             var min = this.range[0].min, max = this.range[0].max, limit, isexcept = false, isborrow = false;
             var op = this.op(), t, r, res;
 
+			// @todo: 确保第一个数生成在有解范围内！比如被加数 91 无法保证 加数 >= 10，
+			//        比加数为 11，则
+			//        如果第一个数随机得不合理，则后面可能无解！
+			//        如果个位生成不合理，则后面则可能无法产生借、进位？
+			var arr1, rg1;
+			if( '+' == op ) {
+				rg1 = {min: this.result.min - this.range[1].min, max: this.result.max - this.range[1].min};
+			} else {
+				// 确保能在最小的减数上能产生借位
+				if( 'all' == this.borrow ) {
+					min = Math.max(min, this.range[1].min - 0 + (this.result.min - 0) + 10); // 强制借位时，必须比减数至少大 10 以上才行!
+				}
+				rg1 = {min: (this.result.min - 0) + (this.range[1].min-0), max: (this.result.max - 0) + (this.range[1].min-0)};
+			}
+
+			// 根据加数和得数范围确定被加数范围，然后与用户设置的范围求并集
+			arr1 = [min-0, max-0, rg1.min, rg1.max].sort(function(a,b){return a-b;});
+			min = arr1[1], max = arr1[2];
+
+			//console.log(min, max, arr1);
+				
+
             // 强制要带借/进位时，对被加/减数有要求
             if( 'all' == this.borrow ) {
                 if( '+' == op ) {
@@ -169,9 +191,6 @@ var app = new Vue({
                     res_ge.push( '+' == op ? (ge + j) % 10 : (ge + 10 - j) % 10);
                 }
 
-				// @todo: 考虑一下加数或减数的设定范围 ...
-				//        当被加/减数和运算符确定后，实际上根据加/减数可以求出一个和的范围
-				//
 
 				// 根据已知的被加/减数、加/减数范围得到得数的范围，然后和用户设置的得数范围合并
 				var rgc = {min: eval(r + op + this.range[i].min), max: eval(r + op + this.range[i].max)};
@@ -180,7 +199,6 @@ var app = new Vue({
 				});
 				// 取两个范围相交的部分
 				var rgr = {min: rgarr[1], max: rgarr[2]};
-				//console.log('rgr =', rgr, rgarr);
 
 
                 // 先随机算出得数，再根据得数算出加数/减数 ...
