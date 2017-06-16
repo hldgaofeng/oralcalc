@@ -4,13 +4,13 @@ function randomInt(Min,Max, genotinarr, geinarr){
     var Range = Max - Min;
     var Rand = Math.random();
     var num = Min + Math.round(Rand * Range);
-    if( typeof(genotinarr) != 'undefined' ) {
+    if( typeof(genotinarr) != 'undefined' && genotinarr.length > 0 ) {
         // 确保产生的随机数的个位数不在数组中
         for(var i = 0;  genotinarr.indexOf(num % 10) >= 0 && i < 1000; i ++) {
             num = randomInt(Min, Max);
         }
     }
-    if( typeof(geinarr) != 'undefined' ) {
+    if( typeof(geinarr) != 'undefined' && geinarr.length > 0 ) {
         // 确保产生的随机数的个位数存在于数组中
         for(var i = 0;  geinarr.indexOf(num % 10) < 0 && i < 1000; i ++) {
             num = randomInt(Min, Max);
@@ -19,17 +19,18 @@ function randomInt(Min,Max, genotinarr, geinarr){
     return num;
 }
 
-// @todo 表格内分页和表尾重复打印只有 IE 支持？ chrome 不支持！
 var app = new Vue({
     el: '#app',
     data: {
         count: 100,
         pagerows: 20,
         cols: 4,
+
         type: '',
         level: '20',
         rule: '1',
         whichcond: '',
+
         itemcount: 0,
         defrange: {min: 0, max:100},
         result: {min: 0, max:100},
@@ -53,6 +54,33 @@ var app = new Vue({
         this.itemcount = 2;
     },
     watch: {
+		count: function(val, oldval) {
+			if( val <  1 ) this.count = 1;
+			if( val >  100000 ) this.count = 100000;
+		},
+		pagerows: function(val, oldval) {
+			if( val <  1 ) this.pagerows = 1;
+			if( val > 100 ) this.pagerows = 100;
+		},
+		cols: function(val, oldval) {
+			if( val <  1 ) this.cols = 1;
+			if( val >  10 ) this.cols = 10;
+		},
+		'result.min': function(val, oldval) {
+			if( val <  0 ) this.result.min = 0;
+		},
+		'result.max': function(val, oldval) {
+			if( val <  0 ) this.result.max = 0;
+		},
+		fontsize: function(val, oldval) {
+			if( val <  1 ) this.fontsize = 1;
+		},
+		cellPadding: function(val, oldval) {
+			if( val <  0 ) this.cellPadding = 0;
+		},
+		cellSpacing: function(val, oldval) {
+			if( val <  0 ) this.cellSpacing = 0;
+		},
         itemcount: function(val, oldval) {
             if( val < 2 )  {
                 this.itemcount = 2;
@@ -117,13 +145,15 @@ var app = new Vue({
 			} else {
 				// 确保能在最小的减数上能产生借位
 				if( 'all' == this.borrow ) {
-					min = Math.max(min, this.range[1].min - 0 + (this.result.min - 0) + 10); // 强制借位时，必须比减数至少大 10 以上才行!
+					min = Math.max(min, (this.range[1].min - 0) + (this.result.min - 0) + 10); // 强制借位时，必须比减数至少大 10 以上才行!
+				} else {
+					min = Math.max(min, (this.range[1].min - 0) + (this.result.min - 0)); // 被减数不允许比(减数+得数)还小，这会产生负数结果
 				}
-				rg1 = {min: (this.result.min - 0) + (this.range[1].min-0), max: (this.result.max - 0) + (this.range[1].min-0)};
+				rg1 = {min: (this.result.min - 0) + (this.range[1].min - 0), max: (this.result.max - 0) + (this.range[1].min - 0)};
 			}
 
 			// 根据加数和得数范围确定被加数范围，然后与用户设置的范围求并集
-			arr1 = [min-0, max-0, rg1.min, rg1.max].sort(function(a,b){return a-b;});
+			arr1 = [min - 0, max - 0, rg1.min, rg1.max].sort(function(a,b){return a-b;});
 			min = arr1[1], max = arr1[2];
 
 			//console.log(min, max, arr1);
@@ -194,7 +224,7 @@ var app = new Vue({
 
 				// 根据已知的被加/减数、加/减数范围得到得数的范围，然后和用户设置的得数范围合并
 				var rgc = {min: eval(r + op + this.range[i].min), max: eval(r + op + this.range[i].max)};
-				var rgarr = [rgc.min-0, rgc.max-0, this.result.min-0, this.result.max-0].sort(function(a, b){
+				var rgarr = [rgc.min - 0, rgc.max - 0, this.result.min - 0, this.result.max - 0].sort(function(a, b){
 					return a - b;
 				});
 				// 取两个范围相交的部分
