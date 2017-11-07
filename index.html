@@ -151,6 +151,7 @@
         <input onclick="document.all.WebBrowser.ExecWB(7,1)" type="button" value="打印预览">
         <![endif]-->
         <button @click="doPrint">打印</button>
+		<span>访问量：{{mycounter}}</span>
         <div>
 			生成题数：{{res.length}}，其中：加法：{{report.addcnt}}，减法：{{report.subcnt}}，乘法：{{report.mulcnt}}，除法：{{report.divcnt}}，借/进位：{{report.borrowcnt}}，异常：{{report.exceptcnt}}
         </div>

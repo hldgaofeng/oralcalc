@@ -24,6 +24,7 @@ Bmob.initialize("cb918bec30eca29246f7101f5ffebafe", "bc68d3c114c13ec55fe79fbb7df
 var app = new Vue({
     el: '#app',
     data: {
+		mycounter: 0,
 		username: '',
 		password: '',
 		is_login: false,
@@ -63,6 +64,7 @@ var app = new Vue({
     created: function() {
         this.itemcount = 2;
 		this.is_login = this.curr_user() ? true : false;
+		this.myCounter();
     },
     watch: {
 		count: function(val, oldval) {
@@ -432,7 +434,8 @@ var app = new Vue({
             } else {
                 window.print();
             }
-			this.doAddData();
+			//this.doAddData();
+			//this.callServerCode();
         },
 
 		doAddData: function() {
@@ -461,6 +464,31 @@ var app = new Vue({
 				},
 				error: function(object, error) {
 					alert("query object fail");
+				}
+			});
+
+		},
+
+		myCounter: function() {
+			var self = this;
+			var GameScore = Bmob.Object.extend("GameScore");
+			var query = new Bmob.Query(GameScore);
+			query.get('37bb7543a4', {
+				success: function(object) {
+					// The object was retrieved successfully.
+					self.mycounter = object.get("mycounter");
+					object.increment("mycounter");
+					object.save(null, {
+						success: function(objectUpdate) {
+							self.mycounter = objectUpdate.get("mycounter");
+						},
+						error: function(model, error) {
+							alert("create object fail");
+						}
+					});
+				},
+				error: function(object, error) {
+					//alert("query object fail");
 				}
 			});
 		},
@@ -504,6 +532,19 @@ var app = new Vue({
 				},
 				error: function(object, error) {
 					alert("query object fail");
+				}
+			});
+		},
+
+		// 调用云端 node.js 逻辑，收费功能，免费 40 天
+		callServerCode: function() {
+			Bmob.Cloud.run('myfunc1', {"name":"tom"}, {
+				success: function(result) {
+					alert('得到结果' + result);
+					console.log(result);
+				},
+				error: function(object, error) {
+					alert('发生了错误' +  error.message);
 				}
 			});
 		},
