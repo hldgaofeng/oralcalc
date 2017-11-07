@@ -19,9 +19,14 @@ function randomInt(Min,Max, genotinarr, geinarr){
     return num;
 }
 
+Bmob.initialize("cb918bec30eca29246f7101f5ffebafe", "bc68d3c114c13ec55fe79fbb7df3f166");
+
 var app = new Vue({
     el: '#app',
     data: {
+		username: '',
+		password: '',
+		is_login: false,
         count: 100,
         pagerows: 20,
         cols: 4,
@@ -57,6 +62,7 @@ var app = new Vue({
     },
     created: function() {
         this.itemcount = 2;
+		this.is_login = this.curr_user() ? true : false;
     },
     watch: {
 		count: function(val, oldval) {
@@ -426,7 +432,171 @@ var app = new Vue({
             } else {
                 window.print();
             }
+			this.doAddData();
         },
+
+		doAddData: function() {
+			var self = this;
+			var GameScore = Bmob.Object.extend("GameScore");
+			var gameScore = new GameScore();
+			gameScore.set("score", 1337);
+			gameScore.save(null, {
+				success: function(object) {
+					alert("create object success, object id:"+object.id);
+					self.doGetData(object.id);
+				},
+				error: function(model, error) {
+					alert("create object fail");
+				}
+			});
+		},
+
+		doGetData: function(obj_id) {
+			var GameScore = Bmob.Object.extend("GameScore");
+			var query = new Bmob.Query(GameScore);
+			query.get(obj_id, {
+				success: function(object) {
+					// The object was retrieved successfully.
+					alert(object.get("score"));
+				},
+				error: function(object, error) {
+					alert("query object fail");
+				}
+			});
+		},
+
+		doEditData: function(obj_id) {
+			var GameScore = Bmob.Object.extend("GameScore");
+			var query = new Bmob.Query(GameScore);
+			query.get(obj_id, {
+				success: function(object) {
+					// The object was retrieved successfully.
+					object.set("score", 1338);
+					object.save(null, {
+						success: function(objectUpdate) {
+							alert("create object success, object score:"+objectUpdate.get("score"));
+						},
+						error: function(model, error) {
+							alert("create object fail");
+						}
+					});
+				},
+				error: function(object, error) {
+					alert("query object fail");
+				}
+			});
+		},
+
+		doDelData: function(obj_id) {
+			var GameScore = Bmob.Object.extend("GameScore");
+			var query = new Bmob.Query(GameScore);
+			query.get(obj_id, {
+				success: function(object) {
+					// The object was retrieved successfully.
+					object.destroy({
+						success: function(deleteObject) {
+							alert("delete success");
+						},
+						error: function(GameScoretest, error) {
+							alert("delete fail");
+						}
+					});
+				},
+				error: function(object, error) {
+					alert("query object fail");
+				}
+			});
+		},
+
+		register: function() {
+			var self = this;
+			if(!this.username || ! this.password) {
+				alert('用户名、密码必须输入！');
+				return;
+			}
+			var user = new Bmob.User();
+			user.set("username", this.username);
+			user.set("password", this.password);
+			//user.set("email", "test@test.com");
+
+			// other fields can be set just like with Bmob.Object
+			//user.set("phone", "415-392-0202");
+
+			user.signUp(null, {
+				success: function(user) {
+					// Hooray! Let them use the app now.
+					self.is_login = self.curr_user() ? true : false;
+					alert('注册成功!');
+				},
+				error: function(user, error) {
+					// Show the error message somewhere and let the user try again.
+					alert("Error: " + error.code + " " + error.message);
+				}
+			});
+		},
+
+		login: function() {
+			var self = this;
+			if(!this.username || ! this.password) {
+				alert('用户名、密码必须输入！');
+				return;
+			}
+			Bmob.User.logIn(this.username, this.password, {
+				success: function(user) {
+					// Do stuff after successful login.
+					self.is_login = self.curr_user() ? true : false;
+					alert('登录成功');
+				},
+				error: function(user, error) {
+					// The login failed. Check error to see why.
+					alert('登录失败' + error.message);
+				}
+			});
+		},
+
+		verify_email: function() {
+			//reset password
+			Bmob.User.requestEmailVerify("h6k65@126.com", {
+				success: function() {
+					// Password reset request was sent successfully
+					alert('验证邮件发送成功！');
+				},
+				error: function(error) {
+					// Show the error message somewhere
+					alert("Error: " + error.code + " " + error.message);
+				}
+			});
+		},
+
+		reset_pwd: function() {
+			Bmob.User.requestPasswordReset("test@126.com", {
+				success: function() {
+					// Password reset request was sent successfully
+					alert('密码重置成功！');
+				},
+				error: function(error) {
+					// Show the error message somewhere
+					alert("Error: " + error.code + " " + error.message);
+				}
+			});
+		},
+
+		curr_user: function() {
+			var currentUser = Bmob.User.current();
+			if (currentUser) {
+				// do stuff with the user
+			} else {
+				// show the signup or login page
+			}
+			return currentUser;
+		},
+
+		logout: function() {
+			var self = this;
+			Bmob.User.logOut();
+			var currentUser = Bmob.User.current();  // this will now be null
+			self.is_login = self.curr_user() ? true : false;
+		},
 
         blank: function() {
             return '___';
@@ -437,4 +607,5 @@ var app = new Vue({
 		}
 
     }
-})
+});
+

@@ -5,6 +5,7 @@
     <title>口算题生成程序</title>
     <link rel="stylesheet" href="index.css">
     <script src="vue.min.js"></script>
+	<script src="bmob-min.js"></script>
 </head>
 <body>
 <!--[if IE]>
@@ -139,6 +140,12 @@
             </fieldset>
         </form>
         <br/>
+		<input type="text" v-if="!is_login" placeholder="用户名" v-model="username"/>
+		<input type="password" v-if="!is_login" placeholder="密码" v-model="password"/>
+		<button @click="login" v-if="!is_login">登录</button>
+		<button @click="register" v-if="!is_login">注册</button>
+		<span v-if="is_login">您好，{{curr_user().get('username')}}</span>
+		<button @click="logout" v-if="is_login">注销</button>
         <button @click="doGen">生成！</button>
         <!--[if IE]>
         <input onclick="document.all.WebBrowser.ExecWB(7,1)" type="button" value="打印预览">
