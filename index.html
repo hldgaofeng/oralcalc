@@ -83,12 +83,13 @@
                     <tbody>
 
                     <tr>
-                        <td>运算符号：</td>
-                        <td><select name="type" v-model="type">
-                            <option value="+">仅加法</option>
-                            <option value="-">仅减法</option>
-                            <option value="" selected>加减法混合</option>
-                        </select></td>
+                        <td>可用运算符：</td>
+                        <td>
+							<label style="cursor:pointer;display:inline;color:blue;"><input type="checkbox" v-model="isadd"/>加</label>
+							<label style="cursor:pointer;display:inline;color:green;"><input type="checkbox" v-model="issub"/>减</label>
+							<label style="cursor:pointer;display:inline;color:purple;"><input type="checkbox" v-model="ismul"/>乘</label>
+							<label style="cursor:pointer;display:inline;color:red;"><input type="checkbox" v-model="isdiv" disabled/>除</label>
+						</td>
                     </tr>
                     <tr>
                         <td>运算规则：</td>
@@ -144,7 +145,7 @@
         <![endif]-->
         <button @click="doPrint">打印</button>
         <div>
-            合计：{{res.length}}，加法：{{report.addcnt}}，减法：{{report.subcnt}}，借/进位：{{report.borrowcnt}}，异常：{{report.exceptcnt}}
+			生成题数：{{res.length}}，其中：加法：{{report.addcnt}}，减法：{{report.subcnt}}，乘法：{{report.mulcnt}}，除法：{{report.divcnt}}，借/进位：{{report.borrowcnt}}，异常：{{report.exceptcnt}}
         </div>
     </div>
     <table width="100%" border="0" cellpadding="0" cellspacing="0">
@@ -167,7 +168,7 @@
                         <td v-for="c in (cols-0)">
                             <template v-if="r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))">&nbsp;</template>
                             <template v-if="(p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1) < res.length">
-                                <span v-for="o in res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li">{{o}}</span>
+                                <span v-for="o in res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li">{{myfmt(o)}}</span>
                             </template>
                         </td>
                     </tr>
