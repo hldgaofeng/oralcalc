@@ -29,6 +29,10 @@
                         <td><input type="number" name="count" v-model="count" style="width:5em"/></td>
                     </tr>
                     <tr>
+                        <td>每行列数：</td>
+                        <td><input type="number" name="cols" v-model="cols" style="width:5em"/></td>
+                    </tr>
+                    <tr>
                         <td>每页行数(IE)：</td>
                         <td><input type="number" name="count" v-model="pagerows" style="width:5em"/>
                             共 {{parseInt((res.length + (cols-0) - 1) / (cols-0))}} 行
@@ -38,10 +42,6 @@
                     <tr>
                         <td>尾部补空行：</td>
                         <td><input type="checkbox" v-model="appendemptyrows"/></td>
-                    </tr>
-                    <tr>
-                        <td>列数：</td>
-                        <td><input type="number" name="cols" v-model="cols" style="width:5em"/></td>
                     </tr>
                     <tr>
                         <td>间距控制：</td>
@@ -89,7 +89,9 @@
 							<label style="cursor:pointer;display:inline;color:blue;"><input type="checkbox" v-model="isadd"/>加</label>
 							<label style="cursor:pointer;display:inline;color:green;"><input type="checkbox" v-model="issub"/>减</label>
 							<label style="cursor:pointer;display:inline;color:purple;"><input type="checkbox" v-model="ismul"/>乘</label>
-							<label style="cursor:pointer;display:inline;color:red;"><input type="checkbox" v-model="isdiv" disabled/>除</label>
+							<label style="cursor:pointer;display:inline;color:red;"><input type="checkbox" v-model="isdiv"/>除</label>
+							<label style="cursor:pointer;display:inline;color:red;" v-if="isdiv">(<input type="checkbox" v-model="isdivint" />除尽)</label>
+							<label style="cursor:pointer;display:inline;color:red;" v-if="isdiv">(<input type="checkbox" v-model="isdivlt10" />10以内)</label>
 						</td>
                     </tr>
                     <tr>
@@ -157,6 +159,7 @@
         </div>
     </div>
     <table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <!-- 页眉（每页都重复打印的部分）-->
         <thead style="display:table-header-group;">
         <tr>
             <th :colspan="cols">
@@ -168,8 +171,10 @@
         </tr>
         </thead>
         <tbody>
+        <!-- 大表格一行就是一页 -->
         <tr :class="{break_before:p>1}" v-for="p in parseInt(((parseInt(res.length + (cols-0) - 1) / (cols-0)) + (pagerows - 1)) / (pagerows - 0)) ">
             <td style="border: 0px solid;">
+                <!-- 小表格是当前页的所有试题 -->
                 <table :style="{fontFamily:fontfamily, fontSize:fontsize+'px'}" width="100%"  :cellPadding="cellPadding" :cellSpacing="cellSpacing">
                     <tr v-for="r in (appendemptyrows ? (pagerows - 0) : Math.min(pagerows, parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))))"
                         :class="{printonly: r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))}">

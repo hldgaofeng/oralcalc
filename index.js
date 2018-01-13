@@ -29,13 +29,15 @@ var app = new Vue({
 		password: '',
 		is_login: false,
         count: 100,
-        pagerows: 20,
+        pagerows: 25,
         cols: 4,
 
-		isadd: true,
-		issub: true,
+		isadd: false,
+		issub: false,
 		ismul: false,
-		isdiv: false,
+		isdiv: true,
+		isdivint: true,
+		isdivlt10: true,
         level: '20',
         rule: '1',
         whichcond: '',
@@ -185,11 +187,14 @@ var app = new Vue({
 					max: (this.range[1].min == 0 ? this.result.max : Math.round(this.result.max / this.range[1].min))
 				};
 			} else if( '/' == op ) {
-				// @todo 实现除法
-				rg1 = {min: this.result.min - this.range[1].min, max: this.result.max - this.range[1].min};
+				// 除法：根据商和除数的限制范围，确定被除数的范围
+				rg1 = {
+					min: Math.round(this.result.min * this.range[1].min), 
+					max: Math.round(this.result.max * this.range[1].max)
+				};
 			}
 
-			// 可用范围与用户设置的范围求交集
+			// 数值 1 范围 = 可用范围与用户设置的范围求交集
 			arr1 = [min - 0, max - 0, rg1.min, rg1.max].sort(function(a,b){return a-b;});
 			min = arr1[1], max = arr1[2];
 
@@ -264,21 +269,19 @@ var app = new Vue({
 				}
 			}
 			else if( '/' == op ) {
-				// @todo 除法必须保证被除数能除得尽，不能有小数！
+				// @todo 除法必须保证被除数能除得尽，不能有小数！要做整除？
                 // 除法：必须保证被除数不可小于允许结果的最小值
                 if( max < this.result.min ) {
-					// 如果可以使用加法，尝试变更运算符？
-                    if( this.isadd ) {
-                        console.warn('被除数最大值比得数允许的最小范围还要小，智能变更为加法！')
-                        op = '+';
-                        r = randomInt(min, max, limit);
+                    if( this.ismul ) {
+                        console.warn('被除数最大值比得数允许的最小范围还要小，智能变更为乘法！')
+                        op = '*';
+                        r = randomInt(min, max); // 随机生成被乘数
                     } else {
                         isexcept = true;
                         console.error('错误：被除数最大值比得数允许的最小范围还要小！')
                     }
                 } else {
-                    min = Math.max(min, this.result.min);
-                    r = randomInt(min, max, limit);
+                    r = randomInt(min, max); // 随机生成被除数
                 }
 			}
 
@@ -288,7 +291,7 @@ var app = new Vue({
             }
 
             // 已知得数，求条件，且第一个数就是被求的条件? 则将该数使用空白代替！
-            var arr = [ ('2' == this.rule && 0 == w ) ? this.blank() : r ];
+            var arr = [ ('2' == this.rule && 0 == w ) ? this.blank(r) : r ];
             for(var i = 1; i < this.itemcount; i ++, op = this.op()) {
 
                 // 强制借/进位时，因为被加/减数的个位已经确定，所以加数的个位取值范围也确定了
@@ -298,7 +301,6 @@ var app = new Vue({
                 for(var j = min; j <= max; j++) {
                     res_ge.push( '+' == op ? (ge + j) % 10 : (ge + 10 - j) % 10);
                 }
-
 
 				// 根据已知的被加/减数、加/减数范围得到得数的范围，然后和用户设置的得数范围合并
 				var rgc = {min: eval(r + op + this.range[i].min), max: eval(r + op + this.range[i].max)};
@@ -310,7 +312,7 @@ var app = new Vue({
 
 				//console.log('rgr', rgr);
 
-                // 先随机算出得数，再根据得数算出加数/减数 ...
+                // 先随机算出得数，再根据得数算出加数/减数/除数 ...
                 if( '+' == op ) {
                     // 加法结果范围：被加数(r) ~ rgr.max
                     min = Math.max(r, rgr.min);
@@ -355,6 +357,7 @@ var app = new Vue({
                 }
 
 				if( '/' == op ) {
+					// @todo 除法忽略被除数范围？
                     // 除法结果范围：rgr.min ~ 被减数
                     min = Math.max(0, rgr.min);
                     max = Math.min(r, rgr.max);
@@ -362,9 +365,30 @@ var app = new Vue({
                         console.error('错误：无法保证除法得数在设定范围内！');
                         min = max;
                         isexcept = true;
-                    }
-                    res = randomInt(min, max, undefined, res_ge);
-                    t = Math.round(r / res);
+					}
+					// @todo 需要修正 r 以实现整除
+					// r / t = res 
+					res = 0 == r ? 0 : (this.isdivlt10 ? randomInt(0, 9) : randomInt(min, max)); // 随机生成商
+					if( 0 == res ) {
+						t = this.isdivlt10 ? randomInt(1,9) : randomInt(this.range[1].min, this.range[1].max); // 0 除以 任何数都等于 0
+					} else {
+						if( this.isdivlt10 ) {
+							t = randomInt(1, 9);
+						} else {
+							t = Math.floor(r / res); // 得到除数(整除)
+						}
+					}
+					if( this.isdivint && this.range.length < 3) {
+						// @todo 在连式运算中可能会出问题，因为 r 是前面算式的结果 ...
+						// 确保能除尽(所以要重新修正被除数)，有可能导致被除数超出设定范围
+						arr[arr.length - 1] = r = res * t;
+						console.log('r=', r, 't=', t, 'res=', res);
+					} else {
+						if( this.isdivlt10 ) {
+							// 需要修正被除数才能达到！
+							arr[arr.length - 1] = r = res * t;
+						}
+					}
 				}
 
                 if( t < this.range[i].min || t > this.range[i].max) {
@@ -388,15 +412,15 @@ var app = new Vue({
 
                 // 已知得数，求条件时，将条件换成空白
                 arr.push(op); // 运算符号
-                arr.push(( '2' == this.rule && i == w ) ? this.blank() : t);
+                arr.push(( '2' == this.rule && i == w ) ? this.blank(t) : t);
 
                 // 计算得数
-                r = eval(r + op + t);
+                r = Math.floor(eval(r + op + t));
             }
 
             // 得数
             arr.push('=');
-            arr.push(( /*true ||*/'2' == this.rule ) ? r : this.blank())
+            arr.push(( /*true ||*/'2' == this.rule ) ? r : this.blank(r))
 
             this.report.addcnt += '+' == op ? 1 : 0;
             this.report.subcnt += '-' == op ? 1 : 0;
@@ -639,8 +663,8 @@ var app = new Vue({
 			self.is_login = self.curr_user() ? true : false;
 		},
 
-        blank: function() {
-            return '___';
+        blank: function(v) {
+            return v; //'___';
         },
 
 		myfmt: function(o) {
