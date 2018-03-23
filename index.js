@@ -1,4 +1,4 @@
-function randomInt(Min,Max, genotinarr, geinarr){
+function randomInt(Min,Max, genotinarr, geinarr, notinarr){
     Min = parseInt(Min);
     Max = parseInt(Max);
     var Range = Max - Min;
@@ -16,6 +16,11 @@ function randomInt(Min,Max, genotinarr, geinarr){
             num = randomInt(Min, Max);
         }
     }
+    if( typeof(notinarr) != 'undefined' && notinarr.length > 0 ) {
+        for(var i = 0;  notinarr.indexOf(num) >= 0 && i < 1000; i ++) {
+            num = randomInt(Min, Max);
+        }
+	}
     return num;
 }
 
@@ -352,7 +357,7 @@ var app = new Vue({
                     res = randomInt(min, max, undefined, res_ge);
 					if( res % r != 0 ) {console.error(res, r, '除不尽');} // 除不尽也没事，后面会重算！就是结果可能超出范围！
 					// 被乘数为 0? 乘数随机一个值！
-					if( r == 0 ) t = randomInt(this.range[1].min, this.range[1].max); // 0 乘以 任何数都等于 0
+					if( r == 0 ) t = randomInt(this.range[i].min, this.range[i].max); // 0 乘以 任何数都等于 0
 					else t = Math.round(res / r); 
                 }
 
@@ -366,29 +371,30 @@ var app = new Vue({
                         min = max;
                         isexcept = true;
 					}
-					// @todo 需要修正 r 以实现整除
+					// 先随机生成【商】res，然后再重随机得到【除数】t，这样才能修正【被除数】r 以实现整除
 					// r / t = res 
-					res = 0 == r ? 0 : (this.isdivlt10 ? randomInt(0, 9) : randomInt(min, max)); // 随机生成商
-					if( 0 == res ) {
-						t = this.isdivlt10 ? randomInt(1,9) : randomInt(this.range[1].min, this.range[1].max); // 0 除以 任何数都等于 0
-					} else {
+					res = (0 == r) ? 0 : (this.isdivlt10 ? randomInt(0, 9) : randomInt(min, max)); // 随机生成商
+					if( 0 == res ) { // 如果商为 0?
+						// 由于 0 除以 任何数都等于 0，所以这里随便生成一个范围内的除数，但除数不能为 0
+						t = this.isdivlt10 ? randomInt(1,9) : randomInt(this.range[i].min, this.range[i].max, [], [], [0]); 
+					} else {// 如果商不为零？
 						if( this.isdivlt10 ) {
 							t = randomInt(1, 9);
 						} else {
-							t = Math.floor(r / res); // 得到除数(整除)
+							t = randomInt(this.range[i].min, this.range[i].max, [], [], [0]); // 除数不零为 0
 						}
 					}
+
+					// @todo 在连式运算中 r 被修正可能会出问题，因为 r 是前面算式的结果 ...
 					if( this.isdivint && this.range.length < 3) {
-						// @todo 在连式运算中可能会出问题，因为 r 是前面算式的结果 ...
-						// 确保能除尽(所以要重新修正被除数)，有可能导致被除数超出设定范围
+						// 确保能除尽(所以要重新修正【被除数】 r = t * res)，有可能导致被除数超出设定范围
 						arr[arr.length - 1] = r = res * t;
-						console.log('r=', r, 't=', t, 'res=', res);
 					} else {
-						if( this.isdivlt10 ) {
-							// 需要修正被除数才能达到！
-							arr[arr.length - 1] = r = res * t;
-						}
+						// 非除尽? 保持【被除数】r 和【商】res 不变，重新计算 t，但这样做有可能让 t 超出它的限制范围!(从而可能违背 10 以内的限制条件)
+						// 还是修正【被除数】 r 吧？ 并且需要随机模拟除不尽的情况
+						arr[arr.length - 1] = r = res * t + randomInt(0, t - 1);
 					}
+					console.log('r=', r, 't=', t, 'res=', res);
 				}
 
                 if( t < this.range[i].min || t > this.range[i].max) {
