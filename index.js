@@ -286,7 +286,7 @@ var app = new Vue({
                         console.error('错误：被除数最大值比得数允许的最小范围还要小！')
                     }
                 } else {
-                    r = randomInt(min, max); // 随机生成被除数
+                    r = randomInt(min, max, [], [], [0]); // 随机生成被除数
                 }
 			}
 
@@ -373,7 +373,7 @@ var app = new Vue({
 					}
 					// 先随机生成【商】res，然后再重随机得到【除数】t，这样才能修正【被除数】r 以实现整除
 					// r / t = res 
-					res = (0 == r) ? 0 : (this.isdivlt10 ? randomInt(0, 9) : randomInt(min, max)); // 随机生成商
+					res = (0 == r) ? 0 : (this.isdivlt10 ? randomInt(1, 9) : randomInt(min, max, [], [], [0])); // 随机生成商
 					if( 0 == res ) { // 如果商为 0?
 						// 由于 0 除以 任何数都等于 0，所以这里随便生成一个范围内的除数，但除数不能为 0
 						t = this.isdivlt10 ? randomInt(1,9) : randomInt(this.range[i].min, this.range[i].max, [], [], [0]); 
@@ -392,7 +392,7 @@ var app = new Vue({
 					} else {
 						// 非除尽? 保持【被除数】r 和【商】res 不变，重新计算 t，但这样做有可能让 t 超出它的限制范围!(从而可能违背 10 以内的限制条件)
 						// 还是修正【被除数】 r 吧？ 并且需要随机模拟除不尽的情况
-						arr[arr.length - 1] = r = res * t + randomInt(0, t - 1);
+						arr[arr.length - 1] = r = res * t + (res ? randomInt(0, t - 1) : 0);
 					}
 					console.log('r=', r, 't=', t, 'res=', res);
 				}
