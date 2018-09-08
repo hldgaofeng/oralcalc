@@ -2,11 +2,13 @@ body, table, button, select, input {
     font-size: 16px;
     font-family: 宋体;
 }
+/*
 
 body {
     padding:0px;
     margin: 0px;
 }
+*/
 
 [v-cloak] {
     display:none;
@@ -28,8 +30,12 @@ tr.printonly {
     div.print-repeat {
 
     }
+    #app {
+        width:auto;
+    }
 }
 
+/*
 .cmdbar {
     background-color: lightgray;
 }
@@ -45,5 +51,6 @@ tr.printonly {
     text-align:right;
 }
 
+*/
 tr.break_before { page-break-before: always; }
 tr.break_after { page-break-after: always; }
