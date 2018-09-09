@@ -74,7 +74,7 @@
                                         <div class="input-group-addon">个</div>
                                         <div class="checkbox form-control" title="勾选后将随机生成带括号的题">
                                             <label>
-                                                <input type="checkbox" v-model="parentheses" /> 带括号
+                                                <input type="checkbox" v-model="parentheses" v-bind:disabled="itemcount<=2"/> 带括号
                                             </label>
                                         </div>
                                     </div>
@@ -136,8 +136,8 @@
                                                     <label class="col-sm-2 control-label">求算目标：</label>
                                                     <div class="input-group col-sm-4">
                                                         <select name="rule" class="form-control" v-model="rule">
-                                                            <option value="1">已知条件，求得数</option>
-                                                            <option value="2">已知得数，求条件</option>
+                                                            <option value="1">已知运算项，求得数</option>
+                                                            <option value="2">已知得数，求运算项</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -145,9 +145,9 @@
                                                     <label class="col-sm-2 control-label"></label>
                                                     <div class="input-group col-sm-4">
                                                         <select v-if="'2'==rule" class="form-control" v-model="whichcond">
-                                                            <option value="">随机求条件</option>
-                                                            <template v-for="(rg, i) in range">
-                                                                <option :value="i">求条件 {{i+1}}</option>
+                                                            <option value="">随机求运算项</option>
+                                                            <template v-for="(rg, i) in range_add">
+                                                                <option :value="i">求运算项 {{i+1}}</option>
                                                             </template>
                                                         </select>
                                                     </div>
@@ -166,7 +166,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="form-group" v-for="(rg, i) in range">
+                                        <div class="form-group" v-for="(rg, i) in range_add">
                                             <label class="col-sm-2 control-label">运算项{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
                                                 <input type="number" class="form-control" v-model="rg.min" title="最小值" />
@@ -177,9 +177,9 @@
                                         <div class="form-group">
                                             <label class="col-sm-2 control-label">得数范围：</label>
                                             <div class="input-group col-sm-4">
-                                                <input type="number" class="form-control" v-model="result.min" title="最小值" />
+                                                <input type="number" class="form-control" v-model="result_add.min" title="最小值" />
                                                 <div class="input-group-addon">-</div>
-                                                <input type="number" class="form-control" v-model="result.max" title="最大值" />
+                                                <input type="number" class="form-control" v-model="result_add.max" title="最大值" />
                                             </div>
                                         </div>
                                     </div>
@@ -194,7 +194,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="form-group" v-for="(rg, i) in range">
+                                        <div class="form-group" v-for="(rg, i) in range_sub">
                                             <label class="col-sm-2 control-label">运算项{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
                                                 <input type="number" class="form-control" v-model="rg.min" title="最小值" />
@@ -205,14 +205,14 @@
                                         <div class="form-group">
                                             <label class="col-sm-2 control-label">得数范围：</label>
                                             <div class="input-group col-sm-4">
-                                                <input type="number" class="form-control" v-model="result.min" title="最小值" />
+                                                <input type="number" class="form-control" v-model="result_sub.min" title="最小值" />
                                                 <div class="input-group-addon">-</div>
-                                                <input type="number" class="form-control" v-model="result.max" title="最大值" />
+                                                <input type="number" class="form-control" v-model="result_sub.max" title="最大值" />
                                             </div>
                                         </div>
                                     </div>
                                     <div class="tab-pane" id="tab-mul" v-if="ismul">
-                                        <div class="form-group" v-for="(rg, i) in range">
+                                        <div class="form-group" v-for="(rg, i) in range_mul">
                                             <label class="col-sm-2 control-label">运算项{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
                                                 <input type="number" class="form-control" v-model="rg.min" title="最小值" />
@@ -223,9 +223,9 @@
                                         <div class="form-group">
                                             <label class="col-sm-2 control-label">得数范围：</label>
                                             <div class="input-group col-sm-4">
-                                                <input type="number" class="form-control" v-model="result.min" title="最小值" />
+                                                <input type="number" class="form-control" v-model="result_mul.min" title="最小值" />
                                                 <div class="input-group-addon">-</div>
-                                                <input type="number" class="form-control" v-model="result.max" title="最大值" />
+                                                <input type="number" class="form-control" v-model="result_mul.max" title="最大值" />
                                             </div>
                                         </div>
                                     </div>
@@ -240,7 +240,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="form-group" v-for="(rg, i) in range">
+                                        <div class="form-group" v-for="(rg, i) in range_div">
                                             <label class="col-sm-2 control-label">运算项{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
                                                 <input type="number" class="form-control" v-model="rg.min" title="最小值" />
@@ -251,9 +251,9 @@
                                         <div class="form-group">
                                             <label class="col-sm-2 control-label">得数范围：</label>
                                             <div class="input-group col-sm-4">
-                                                <input type="number" class="form-control" v-model="result.min" title="最小值" />
+                                                <input type="number" class="form-control" v-model="result_div.min" title="最小值" />
                                                 <div class="input-group-addon">-</div>
-                                                <input type="number" class="form-control" v-model="result.max" title="最大值" />
+                                                <input type="number" class="form-control" v-model="result_div.max" title="最大值" />
                                             </div>
                                         </div>
                                     </div>

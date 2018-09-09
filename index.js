@@ -46,13 +46,31 @@ var app = new Vue({
 		whichcond: '',
 		parentheses: false, // 是否生成带括号的题
 
-        itemcount: 0,
-        defrange: {min: 0, max:100},
-        result: {min: 0, max:100},
-        range: [],
+		itemcount: 0,
+
+		// 加法
+		defrange_add: [{min: 0, max: 100}, {min: 0, max: 100}],
+		result_add: {min: 0, max: 100},
+		range_add: [],
+
+		// 减法
+		defrange_sub: [{min: 0, max: 100}, {min: 0, max: 100}],
+		result_sub: {min: 0, max: 100},
+		range_sub: [],
+
+		// 乘法
+		defrange_mul: [{min: 0, max: 10}, {min: 0, max: 10}],
+		result_mul: {min: 0, max: 100},
+		range_mul: [],
+
+		// 除法
+		defrange_div: [{min: 0, max: 100}, {min: 0, max: 9}],
+		result_div: {min: 0, max: 10},
+		range_div: [],
+
 		borrow: 'random', // 减法借位设置
 		carry: 'random', // 加法进位设置
-		nomod: 'random', // 除法余数设置
+		nomod: 'no', // 除法余数设置
         fontsize: 22,
         fontfamily: '宋体',
         cellPadding: 6,
@@ -88,12 +106,12 @@ var app = new Vue({
 			if( val <  1 ) this.cols = 1;
 			if( val >  10 ) this.cols = 10;
 		},
-		'result.min': function(val, oldval) {
-			if( val <  0 ) this.result.min = 0;
-		},
-		'result.max': function(val, oldval) {
-			if( val <  0 ) this.result.max = 0;
-		},
+		// 'result.min': function(val, oldval) {
+		// 	if( val <  0 ) this.result.min = 0;
+		// },
+		// 'result.max': function(val, oldval) {
+		// 	if( val <  0 ) this.result.max = 0;
+		// },
 		fontsize: function(val, oldval) {
 			if( val <  1 ) this.fontsize = 1;
 		},
@@ -111,14 +129,33 @@ var app = new Vue({
             if( val > 5 ) {
                 this.itemcount = 5;
                 return;
-            }
+			}
+			if( val <= 2 ) this.parentheses = false;
             for (var i = 0; i < val; i ++) {
-                if( ! this.range[i] ) {
-                    this.range.splice(i, 1, {min: this.defrange.min, max: this.defrange.max});
+                if( ! this.range_add[i] ) {
+                    this.range_add.splice(i, 1, {min: (i > 0 ? this.defrange_add[1].min : this.defrange_add[0].min), max: (i > 0 ? this.defrange_add[1].max : this.defrange_add[0].max)});
+                }
+                if( ! this.range_sub[i] ) {
+                    this.range_sub.splice(i, 1, {min: (i > 0 ? this.defrange_sub[1].min : this.defrange_sub[0].min), max: (i > 0 ? this.defrange_sub[1].max : this.defrange_sub[0].max)});
+                }
+                if( ! this.range_mul[i] ) {
+                    this.range_mul.splice(i, 1, {min: (i > 0 ? this.defrange_mul[1].min : this.defrange_mul[0].min), max: (i > 0 ? this.defrange_mul[1].max : this.defrange_mul[0].max)});
+                }
+                if( ! this.range_div[i] ) {
+                    this.range_div.splice(i, 1, {min: (i > 0 ? this.defrange_div[1].min : this.defrange_div[0].min), max: (i > 0 ? this.defrange_div[1].max : this.defrange_div[0].max)});
                 }
             }
-            if( this.range.length > this.itemcount ) {
-                this.range.splice(this.itemcount);
+            if( this.range_add.length > this.itemcount ) {
+                this.range_add.splice(this.itemcount);
+            }
+            if( this.range_sub.length > this.itemcount ) {
+                this.range_sub.splice(this.itemcount);
+            }
+            if( this.range_mul.length > this.itemcount ) {
+                this.range_mul.splice(this.itemcount);
+            }
+            if( this.range_div.length > this.itemcount ) {
+                this.range_div.splice(this.itemcount);
             }
         }
     },
@@ -140,13 +177,37 @@ var app = new Vue({
 				alert('必须至少指定一种运算符！');
 				return false;
 			}
-            if(this.result.max - 0 < this.result.min - 0 ) {
-                alert('得数范围无效！');
+            if(this.result_add.max - 0 < this.result_add.min - 0 ) {
+                alert('加法得数范围无效！');
+                return false;
+            }
+            if(this.result_sub.max - 0 < this.result_sub.min - 0 ) {
+                alert('减法得数范围无效！');
+                return false;
+            }
+            if(this.result_mul.max - 0 < this.result_mul.min - 0 ) {
+                alert('乘法得数范围无效！');
+                return false;
+            }
+            if(this.result_div.max - 0 < this.result_div.min - 0 ) {
+                alert('除法得数范围无效！');
                 return false;
             }
             for(var i = 0; i < this.itemcount; i ++) {
-                if( this.range[i].max - 0 < this.range[i].min - 0 ) {
-                    alert('数值' +(i+1)+'范围无效！');
+                if( this.range_add[i].max - 0 < this.range_add[i].min - 0 ) {
+                    alert('加法数值' +(i+1)+'范围无效！');
+                    return false;
+                }
+                if( this.range_sub[i].max - 0 < this.range_sub[i].min - 0 ) {
+                    alert('减法数值' +(i+1)+'范围无效！');
+                    return false;
+                }
+                if( this.range_mul[i].max - 0 < this.range_mul[i].min - 0 ) {
+                    alert('乘法数值' +(i+1)+'范围无效！');
+                    return false;
+                }
+                if( this.range_div[i].max - 0 < this.range_div[i].min - 0 ) {
+                    alert('除法数值' +(i+1)+'范围无效！');
                     return false;
                 }
             }
@@ -165,10 +226,13 @@ var app = new Vue({
             // 4. 强制借位减法时，首先必须保证被减数个位小于减数的个位，其次也必须保证减数总体小于被减数，以免产生负数
 			// 5. 强制进、借位不对乘除法起作用
 			// 6. 除法必须都能整除
+			var op = this.op(), t, r, res;
+
+			var range = ({'+':this.range_add, '-':this.range_sub, '*':this.range_mul, '/':this.range_div})[op];
+			var result = {'+':this.result_add, '-':this.result_sub, '*':this.result_mul, '/':this.result_div}[op];
 
             var w = ''===this.whichcond ?  randomInt(0, this.itemcount -1) : this.whichcond - 0; // 已知得数，随机求某一个条件
-            var min = this.range[0].min, max = this.range[0].max, limit = [], isexcept = false, isborrow = false, iscarry = false;
-            var op = this.op(), t, r, res;
+            var min = range[0].min, max = range[0].max, limit = [], isexcept = false, isborrow = false, iscarry = false;
 
 			// @todo: 确保第一个数生成在有解范围内！比如被加数 91 无法保证 加数 >= 10，
 			//        比加数为 11，则
@@ -178,26 +242,26 @@ var app = new Vue({
 			
 			if( '+' == op ) {
 				// 加法：根据结果和加数的限制范围，确定被加数的范围
-				rg1 = {min: this.result.min - this.range[1].min, max: this.result.max - this.range[1].min};
+				rg1 = {min: result.min - range[1].min, max: result.max - range[1].min};
 			} else if( '-' == op ) {
 				// 减法：根据结果和减数的限制范围，确定被减数的范围，确保能在最小的减数上能产生借位
 				if( 'all' == this.borrow ) {
-					min = Math.max(min, (this.range[1].min - 0) + (this.result.min - 0) + 10); // 强制借位时，必须比减数至少大 10 以上才行!
+					min = Math.max(min, (range[1].min - 0) + (result.min - 0) + 10); // 强制借位时，必须比减数至少大 10 以上才行!
 				} else {
-					min = Math.max(min, (this.range[1].min - 0) + (this.result.min - 0)); // 被减数不允许比(减数+得数)还小，这会产生负数结果
+					min = Math.max(min, (range[1].min - 0) + (result.min - 0)); // 被减数不允许比(减数+得数)还小，这会产生负数结果
 				}
-				rg1 = {min: (this.result.min - 0) + (this.range[1].min - 0), max: (this.result.max - 0) + (this.range[1].min - 0)};
+				rg1 = {min: (result.min - 0) + (range[1].min - 0), max: (result.max - 0) + (range[1].min - 0)};
 			} else if( '*' == op ) {
 				// 乘法：根据结果和乘数的限制范围，确定被乘数的范围 (注意除数不能为0)
 				rg1 = {
-					min: (this.range[1].min == 0 ? 0 : Math.round(this.result.min / this.range[1].min)), 
-					max: (this.range[1].min == 0 ? this.result.max : Math.round(this.result.max / this.range[1].min))
+					min: (range[1].min == 0 ? 0 : Math.round(result.min / range[1].min)), 
+					max: (range[1].min == 0 ? result.max : Math.round(result.max / range[1].min))
 				};
 			} else if( '/' == op ) {
 				// 除法：根据商和除数的限制范围，确定被除数的范围
 				rg1 = {
-					min: Math.round(this.result.min * this.range[1].min), 
-					max: Math.round(this.result.max * this.range[1].max)
+					min: Math.round(result.min * range[1].min), 
+					max: Math.round(result.max * range[1].max)
 				};
 			}
 
@@ -228,7 +292,7 @@ var app = new Vue({
 
             if( '+' == op ) {
                 // 加法：数值 1 的最小值都超过了得数允许的最大值，则无法使用加法
-                if( min > this.result.max ) {
+                if( min > result.max ) {
                     // 智能处理：如果可以使用减法，尝试变更运算符？
                     if( this.issub ) {
                         console.warn('被加数最小值超出了得数允许的最大范围，将智能变更为减法！')
@@ -240,13 +304,13 @@ var app = new Vue({
                     }
                 } else {
                     // 被加数不能超过结果允许的最大值
-                    max = Math.min(max, this.result.max);
+                    max = Math.min(max, result.max);
                     r = randomInt(min, max, limit);
                 }
             }
             else if( '-' == op ) {
                 // 减法：必须保证被减数不可小于允许结果的最小值
-                if( max < this.result.min ) {
+                if( max < result.min ) {
 					// 如果可以使用加法，尝试变更运算符？
                     if( this.isadd ) {
                         console.warn('被减数最大值比得数允许的最小范围还要小，智能变更为加法！')
@@ -257,13 +321,13 @@ var app = new Vue({
                         console.error('错误：被减数最大值比得数允许的最小范围还要小！')
                     }
                 } else {
-                    min = Math.max(min, this.result.min);
+                    min = Math.max(min, result.min);
                     r = randomInt(min, max, limit);
                 }
             }
 			else if( '*' == op ) {
 				// 乘法：最小的积  比最大结果还大
-                if( min > this.result.max ) {
+                if( min > result.max ) {
                     if( this.issub ) {
                         console.warn('被乘数最小值超出了得数允许的最大范围，将智能变更为减法！')
                         op = '-';
@@ -274,14 +338,14 @@ var app = new Vue({
                     }
 				} else {
                     // 被乘数不能超过结果允许的最大值
-                    max = Math.min(max, this.result.max);
+                    max = Math.min(max, result.max);
 					r = randomInt(min, max, limit);
 				}
 			}
 			else if( '/' == op ) {
 				// @todo 除法必须保证被除数能除得尽，不能有小数！要做整除？
                 // 除法：必须保证被除数不可小于允许结果的最小值
-                if( max < this.result.min ) {
+                if( max < result.min ) {
                     if( this.ismul ) {
                         console.warn('被除数最大值比得数允许的最小范围还要小，智能变更为乘法！')
                         op = '*';
@@ -297,7 +361,7 @@ var app = new Vue({
 
             // 如果前面无法生成合法的数值，这里就直接按数值 1 限定范围生成随机数即可！因为无论如何它将是一个异常的值！
             if( 'undefined' == typeof(r) ) {
-                r = randomInt(this.range[0].min, this.range[0].max, limit);
+                r = randomInt(range[0].min, range[0].max, limit);
             }
 
             // 已知得数，求条件，且第一个数就是被求的条件? 则将该数使用空白代替！
@@ -322,8 +386,8 @@ var app = new Vue({
                 }
 
 				// 根据已知的被加/减数、加/减数范围得到得数的范围，然后和用户设置的得数范围合并
-				var rgc = {min: eval(r + op + this.range[i].min), max: eval(r + op + this.range[i].max)};
-				var rgarr = [rgc.min - 0, rgc.max - 0, this.result.min - 0, this.result.max - 0].sort(function(a, b){
+				var rgc = {min: eval(r + op + range[i].min), max: eval(r + op + range[i].max)};
+				var rgarr = [rgc.min - 0, rgc.max - 0, result.min - 0, result.max - 0].sort(function(a, b){
 					return a - b;
 				});
 				// 取两个范围相交的部分
@@ -371,7 +435,7 @@ var app = new Vue({
                     res = randomInt(min, max, undefined, res_ge);
 					if( res % r != 0 ) {console.error(res, r, '除不尽');} // 除不尽也没事，后面会重算！就是结果可能超出范围！
 					// 被乘数为 0? 乘数随机一个值！
-					if( r == 0 ) t = randomInt(this.range[i].min, this.range[i].max); // 0 乘以 任何数都等于 0
+					if( r == 0 ) t = randomInt(range[i].min, range[i].max); // 0 乘以 任何数都等于 0
 					else t = Math.round(res / r); 
                 }
 
@@ -390,13 +454,13 @@ var app = new Vue({
 					res = (0 == r) ? 0 : randomInt(min, max, [], [], [0]); // 随机生成商
 					if( 0 == res ) { // 如果商为 0?
 						// 由于 0 除以 任何数都等于 0，所以这里随便生成一个范围内的除数，但除数不能为 0
-						t = randomInt(this.range[i].min, this.range[i].max, [], [], [0]); 
+						t = randomInt(range[i].min, range[i].max, [], [], [0]); 
 					} else {// 如果商不为零？
-						t = randomInt(this.range[i].min, this.range[i].max, [], [], [0]); // 除数不零为 0
+						t = randomInt(range[i].min, range[i].max, [], [], [0]); // 除数不零为 0
 					}
 
 					// @todo 在连式运算中 r 被修正可能会出问题，因为 r 是前面算式的结果 ...
-					if( this.nomod == 'no' && this.range.length < 3) {
+					if( this.nomod == 'no' && range.length < 3) {
 						// 确保能除尽(所以要重新修正【被除数】 r = t * res)，有可能导致被除数超出设定范围
 						arr[arr.length - 1] = r = res * t;
 					} else {
@@ -407,8 +471,8 @@ var app = new Vue({
 					console.log('r=', r, 't=', t, 'res=', res);
 				}
 
-                if( t < this.range[i].min || t > this.range[i].max) {
-                    console.error('错误：为保证得数在范围内，加数/减数将超出范围！', t, this.range[i].min, this.range[i].max);
+                if( t < range[i].min || t > range[i].max) {
+                    console.error('错误：为保证得数在范围内，加数/减数将超出范围！', t, range[i].min, range[i].max);
                     isexcept = true;
                 }
 
