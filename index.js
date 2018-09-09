@@ -37,21 +37,22 @@ var app = new Vue({
         pagerows: 25,
         cols: 4,
 
-		isadd: false,
-		issub: false,
-		ismul: false,
+		isadd: true,
+		issub: true,
+		ismul: true,
 		isdiv: true,
-		isdivint: true,
-		isdivlt10: true,
         level: '20',
         rule: '1',
-        whichcond: '',
+		whichcond: '',
+		parentheses: false, // 是否生成带括号的题
 
         itemcount: 0,
         defrange: {min: 0, max:100},
         result: {min: 0, max:100},
         range: [],
-        borrow: 'random',
+		borrow: 'random', // 减法借位设置
+		carry: 'random', // 加法进位设置
+		nomod: 'random', // 除法余数设置
         fontsize: 22,
         fontfamily: '宋体',
         cellPadding: 6,
@@ -64,7 +65,8 @@ var app = new Vue({
             subcnt: 0, // 减法题数量
 			mulcnt: 0,
 			divcnt: 0,
-            borrowcnt: 0, // 借/进位题数量
+            borrowcnt: 0, // 借位题数量
+            carrycnt: 0, // 进位题数量
             exceptcnt: 0 // 异常题数量(由于冲突，未能按规则生成)
         }
     },
@@ -165,7 +167,7 @@ var app = new Vue({
 			// 6. 除法必须都能整除
 
             var w = ''===this.whichcond ?  randomInt(0, this.itemcount -1) : this.whichcond - 0; // 已知得数，随机求某一个条件
-            var min = this.range[0].min, max = this.range[0].max, limit, isexcept = false, isborrow = false;
+            var min = this.range[0].min, max = this.range[0].max, limit = [], isexcept = false, isborrow = false, iscarry = false;
             var op = this.op(), t, r, res;
 
 			// @todo: 确保第一个数生成在有解范围内！比如被加数 91 无法保证 加数 >= 10，
@@ -205,16 +207,19 @@ var app = new Vue({
 
 			//console.log(min, max, arr1);
 
-            // 强制要带借/进位时，对被加/减数有要求
-            if( 'all' == this.borrow ) {
+			// 强制进位时，对被加数要求
+            if( 'all' == this.carry ) {
                 if( '+' == op ) {
-                    limit = [0]; // 限制条件：有进位的被加数个位不能为 0.
-                } else if( '-' == op ) {
+					limit = [0]; // 限制条件：有进位的被加数个位不能为 0.
+				}
+			}
+
+            // 强制要借位时，对被减数有要求
+            if( 'all' == this.borrow ) {
+                if( '-' == op ) {
                     min = Math.max(min, 10); // 强制借位减法，被减数不能小于 10，否则会产生负数结果
                     limit = [9]; // 限制条件：有借位的被减数个位不能为 9.
-                } else {
-					limit = []; // 乘除法对被乘数、被除数没有限制
-				}
+                }
             }
 
 			//
@@ -300,9 +305,18 @@ var app = new Vue({
             for(var i = 1; i < this.itemcount; i ++, op = this.op()) {
 
                 // 强制借/进位时，因为被加/减数的个位已经确定，所以加数的个位取值范围也确定了
-                var ge = r % 10, res_ge = [];
-                min = ('all' == this.borrow) ? ('+' == op ? 10 - ge : ge + 1) : 0; // 强制借/进位
-                max = ('no' == this.borrow) ? ('+' == op ? 9 - ge : ge) : 9; // 强制不借/进位
+				var ge = r % 10, res_ge = [];
+				
+				min = 0;
+				if( 'all' == this.carry && '+' == op ) min = 10 - ge; // 强制进位加法：计算出要产生进位的加数最小值
+				else if( 'all' == this.borrow && '-' == op ) min = ge + 1; // 强制借位减法：计算出要产生借位的减数最小值
+
+				max = 9;
+				if( 'no' == this.carry && '+' == op ) max = 9 - ge; // 强制不进位加法：计算出加数最大值
+				else if( 'no' == this.borrow && '-' == op ) max = ge; // 强制不借位减法：计算出减数最大值
+
+                // min = ('all' == this.borrow) ? ('+' == op ? 10 - ge : ge + 1) : 0; // 强制借/进位
+                // max = ('no' == this.borrow) ? ('+' == op ? 9 - ge : ge) : 9; // 强制不借/进位
                 for(var j = min; j <= max; j++) {
                     res_ge.push( '+' == op ? (ge + j) % 10 : (ge + 10 - j) % 10);
                 }
@@ -373,20 +387,16 @@ var app = new Vue({
 					}
 					// 先随机生成【商】res，然后再重随机得到【除数】t，这样才能修正【被除数】r 以实现整除
 					// r / t = res 
-					res = (0 == r) ? 0 : (this.isdivlt10 ? randomInt(1, 9) : randomInt(min, max, [], [], [0])); // 随机生成商
+					res = (0 == r) ? 0 : randomInt(min, max, [], [], [0]); // 随机生成商
 					if( 0 == res ) { // 如果商为 0?
 						// 由于 0 除以 任何数都等于 0，所以这里随便生成一个范围内的除数，但除数不能为 0
-						t = this.isdivlt10 ? randomInt(1,9) : randomInt(this.range[i].min, this.range[i].max, [], [], [0]); 
+						t = randomInt(this.range[i].min, this.range[i].max, [], [], [0]); 
 					} else {// 如果商不为零？
-						if( this.isdivlt10 ) {
-							t = randomInt(1, 9);
-						} else {
-							t = randomInt(this.range[i].min, this.range[i].max, [], [], [0]); // 除数不零为 0
-						}
+						t = randomInt(this.range[i].min, this.range[i].max, [], [], [0]); // 除数不零为 0
 					}
 
 					// @todo 在连式运算中 r 被修正可能会出问题，因为 r 是前面算式的结果 ...
-					if( this.isdivint && this.range.length < 3) {
+					if( this.nomod == 'no' && this.range.length < 3) {
 						// 确保能除尽(所以要重新修正【被除数】 r = t * res)，有可能导致被除数超出设定范围
 						arr[arr.length - 1] = r = res * t;
 					} else {
@@ -402,18 +412,20 @@ var app = new Vue({
                     isexcept = true;
                 }
 
-                if( 'all' == this.borrow) {
+                if( 'all' == this.carry) {
                     if( '+' == op && r % 10 + t % 10 < 10 ) {
                         console.error('错误：未能生成进位！', r, JSON.stringify(res_ge), t, res);
                         isexcept = true;
-                    }
+					}
+				}
+                if( 'all' == this.borrow) {
                     if( '-' == op && r % 10 >= t % 10 ) {
                         console.error('错误：未能生成借位！', r, JSON.stringify(res_ge), t, res);
                         isexcept = true;
                     }
                 }
 
-                if( '+' == op && r % 10 + t % 10 >= 10) isborrow = true; // 有进位
+                if( '+' == op && r % 10 + t % 10 >= 10) iscarry = true; // 有进位
                 if( '-' == op && r % 10 < t % 10) isborrow = true; // 有借位
 
                 // 已知得数，求条件时，将条件换成空白
@@ -432,6 +444,7 @@ var app = new Vue({
             this.report.subcnt += '-' == op ? 1 : 0;
             this.report.mulcnt += '*' == op ? 1 : 0;
             this.report.divcnt += '/' == op ? 1 : 0;
+            this.report.carrycnt += iscarry ? 1 : 0;
             this.report.borrowcnt += isborrow ? 1 : 0;
             this.report.exceptcnt += isexcept ? 1 : 0;
 
@@ -447,7 +460,8 @@ var app = new Vue({
             this.report.subcnt = 0; // 减法题数量
             this.report.mulcnt = 0;
             this.report.divcnt = 0;
-            this.report.borrowcnt = 0; // 借/进位题数量
+            this.report.carrycnt = 0; // 进位题数量
+            this.report.borrowcnt = 0; // 借位题数量
             this.report.exceptcnt = 0; // 异常题数量(由于冲突，未能按规则生成)
             this.res = [];
             for(var i = 0; i < this.count; i ++) {
