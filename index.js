@@ -44,9 +44,13 @@ var app = new Vue({
         level: '20',
         rule: '1',
 		whichcond: '',
-		parentheses: false, // 是否生成带括号的题
+		exact_parentheses: false,
+		parentheses: {enabled: false, min: 0, max: 0}, // 是否生成带括号的题
 
 		itemcount: 0,
+
+		// 符号
+		range_op: [],
 
 		// 加法
 		defrange_add: [{min: 0, max: 100}, {min: 0, max: 100}],
@@ -130,8 +134,22 @@ var app = new Vue({
                 this.itemcount = 5;
                 return;
 			}
-			if( val <= 2 ) this.parentheses = false;
+			if( val > 2 ) {
+				this.parentheses.enabled = true;
+				if( this.parentheses.min < 0 ) this.parentheses.min = 0;
+				if( this.parentheses.max < 0 ) this.parentheses.max = 0;
+				if( this.parentheses.max > val - 1 ) this.parentheses.max = val - 1;
+				if( this.parentheses.min > this.parentheses.max ) this.parentheses.max = this.parentheses.max;
+			} else {
+				this.parentheses.enabled = false;
+				this.parentheses.min = 0;
+				this.parentheses.max = 0;
+			}
+			this.parentheses.enabled = val > 2;
             for (var i = 0; i < val; i ++) {
+				if( ! this.range_op[i] && i < val - 1) {
+                    this.range_op.splice(i, 1, {add: true, sub:true, mul:true, div:true, parentheses: false, all:true});
+				}
                 if( ! this.range_add[i] ) {
                     this.range_add.splice(i, 1, {min: (i > 0 ? this.defrange_add[1].min : this.defrange_add[0].min), max: (i > 0 ? this.defrange_add[1].max : this.defrange_add[0].max)});
                 }
@@ -144,6 +162,9 @@ var app = new Vue({
                 if( ! this.range_div[i] ) {
                     this.range_div.splice(i, 1, {min: (i > 0 ? this.defrange_div[1].min : this.defrange_div[0].min), max: (i > 0 ? this.defrange_div[1].max : this.defrange_div[0].max)});
                 }
+            }
+            if( this.range_op.length > this.itemcount - 1) {
+                this.range_op.splice(this.itemcount - 1);
             }
             if( this.range_add.length > this.itemcount ) {
                 this.range_add.splice(this.itemcount);

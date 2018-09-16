@@ -31,37 +31,52 @@
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                                     aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="myModalLabel">详细设置</h4>
+                            <h4 class="modal-title" id="myModalLabel">详细题型设置</h4>
                         </div>
                         <div class="modal-body">
                             <form class="form-horizontal">
                                 <div class="form-group">
-                                    <label class="col-sm-2 control-label">需包含题型：</label>
+                                    <label class="col-sm-2 control-label">快速设置：</label>
+                                    <div class="input-group col-sm-8">
+                                        <select name="level" class="form-control" disabled>
+                                            <option value="">【快捷选题型择（暂未开放）】</option>
+                                            <option value="20">20 以内整数加减法</option>
+                                            <option value="100n">100 以内加减法不进/借位</option>
+                                            <option value="100+1">100 以内进位加法(1 位数)</option>
+                                            <option value="100+2">100 以内进位加法(2 位数)</option>
+                                            <option value="100-1">100 以内借位减法(1 位数)</option>
+                                            <option value="100-2">100 以内借位减法(2 位数)</option>
+                                            <option value="100+-">100 以内连加连减</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">包含题型：</label>
                                     <div class="input-group col-sm-8">
                                         <div class="btn-group" data-toggle="buttons">
-                                            <label v-bind:class="{ active: isadd, 'btn-info': isadd, 'btn-default': !isadd}"
+                                            <label v-bind:class="{ active: isadd, 'btn-danger': isadd, 'btn-default': !isadd}"
                                                 class="btn" v-on:click="isadd=!isadd">
-                                                <span v-bind:class="{ 'glyphicon-check': isadd, 'glyphicon-unchecked': ! isadd }"
+                                                <span v-bind:class="{ 'glyphicon-ok': isadd, 'glyphicon-unchecked': ! isadd }"
                                                     class="glyphicon" aria-hidden="true"></span>
-                                                <input type="checkbox" autocomplete="off" v-model="isadd"> 加法
+                                                <input type="checkbox" autocomplete="off" v-model="isadd"> ＋加法
                                             </label>
-                                            <label v-bind:class="{ active: issub, 'btn-info': issub, 'btn-default': !issub }"
+                                            <label v-bind:class="{ active: issub, 'btn-warning': issub, 'btn-default': !issub }"
                                                 class="btn" v-on:click="issub=!issub">
-                                                <span v-bind:class="{ 'glyphicon-check': issub, 'glyphicon-unchecked': ! issub }"
+                                                <span v-bind:class="{ 'glyphicon-ok': issub, 'glyphicon-unchecked': ! issub }"
                                                     class="glyphicon" aria-hidden="true"></span>
-                                                <input type="checkbox" autocomplete="off" v-model="issub"> 减法
+                                                <input type="checkbox" autocomplete="off" v-model="issub"> －减法
                                             </label>
-                                            <label v-bind:class="{ active: ismul, 'btn-info': ismul, 'btn-default': !ismul }"
+                                            <label v-bind:class="{ active: ismul, 'btn-primary': ismul, 'btn-default': !ismul }"
                                                 class="btn" v-on:click="ismul=!ismul">
-                                                <span v-bind:class="{ 'glyphicon-check': ismul, 'glyphicon-unchecked': ! ismul }"
+                                                <span v-bind:class="{ 'glyphicon-ok': ismul, 'glyphicon-unchecked': ! ismul }"
                                                     class="glyphicon" aria-hidden="true"></span>
-                                                <input type="checkbox" autocomplete="off" v-model="ismul"> 乘法
+                                                <input type="checkbox" autocomplete="off" v-model="ismul"> &times;乘法
                                             </label>
-                                            <label v-bind:class="{ active: isdiv, 'btn-info': isdiv, 'btn-default': !isdiv }"
+                                            <label v-bind:class="{ active: isdiv, 'btn-success': isdiv, 'btn-default': !isdiv }"
                                                 class="btn" v-on:click="isdiv=!isdiv">
-                                                <span v-bind:class="{ 'glyphicon-check': isdiv, 'glyphicon-unchecked': ! isdiv }"
+                                                <span v-bind:class="{ 'glyphicon-ok': isdiv, 'glyphicon-unchecked': ! isdiv }"
                                                     class="glyphicon" aria-hidden="true"></span>
-                                                <input type="checkbox" autocomplete="off" v-model="isdiv"> 除法
+                                                <input type="checkbox" autocomplete="off" v-model="isdiv"> &div;除法
                                             </label>
 
                                         </div>
@@ -69,23 +84,30 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-2 control-label">运算项个数：</label>
-                                    <div class="input-group col-sm-4 ">
+                                    <div class="input-group col-sm-8 ">
                                         <input type="number" class="form-control" v-model="itemcount" />
-                                        <div class="input-group-addon">个</div>
-                                        <div class="checkbox form-control" title="勾选后将随机生成带括号的题">
-                                            <label>
-                                                <input type="checkbox" v-model="parentheses" v-bind:disabled="itemcount<=2"/> 带括号
-                                            </label>
-                                        </div>
+                                        <div class="input-group-addon">求算目标：</div>
+                                        <select name="rule" class="form-control col-sm-2 " v-model="rule">
+                                            <option value="1">求得数</option>
+                                            <option value="2">求运算项</option>
+                                        </select>
+                                        <div v-if="'2'==rule" class="input-group-addon"><span class="glyphicon glyphicon-arrow-right"
+                                                aria-hidden="true"></span></div>
+                                        <select v-if="'2'==rule" class="form-control" v-model="whichcond">
+                                            <option value="">随机</option>
+                                            <template v-for="(rg, i) in range_add">
+                                                <option :value="i">运算项#{{i+1}}</option>
+                                            </template>
+                                        </select>
                                     </div>
                                 </div>
                                 <hr style="margin:8px" />
                                 <!--标签-->
                                 <ul class="nav nav-tabs" role="tablist">
                                     <li class="active">
-                                        <a href="#tab-general" role="tab" data-toggle="tab">
-                                            <span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span>
-                                            通用</a>
+                                        <a href="#tab-op" role="tab" data-toggle="tab">
+                                            <span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                                            符号设置</a>
                                     </li>
                                     <li v-if="isadd">
                                         <a href="#tab-add" role="tab" data-toggle="tab">
@@ -104,52 +126,106 @@
                                     </li>
                                     <li v-if="isdiv">
                                         <a href="#tab-div" role="tab" data-toggle="tab">
-                                            <span class="glyphicon " aria-hidden="true" style="font-size: 25px;font-weight: bold;line-height: 0px;">÷</span>
+                                            <span class="glyphicon " aria-hidden="true" style="font-size: 25px;font-weight: bold;line-height: 0px;">&div;</span>
                                             除法设置</a>
                                     </li>
                                 </ul>
                                 <!--标签的内容-->
                                 <div class="tab-content" style="padding:10px;">
-                                    <div class="tab-pane active" id="tab-general">
+              
+                                    <div class="tab-pane active" id="tab-op">
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <label class="col-sm-2 control-label"></label>
-                                                    <div class="input-group col-sm-4">
-                                                        <select name="level" class="form-control" disabled>
-                                                            <option value="">【快捷选题型择】</option>
-                                                            <option value="20">20 以内整数加减法</option>
-                                                            <option value="100n">100 以内加减法不进/借位</option>
-                                                            <option value="100+1">100 以内进位加法(1 位数)</option>
-                                                            <option value="100+2">100 以内进位加法(2 位数)</option>
-                                                            <option value="100-1">100 以内借位减法(1 位数)</option>
-                                                            <option value="100-2">100 以内借位减法(2 位数)</option>
-                                                            <option value="100+-">100 以内连加连减</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label class="col-sm-2 control-label">求算目标：</label>
-                                                    <div class="input-group col-sm-4">
-                                                        <select name="rule" class="form-control" v-model="rule">
-                                                            <option value="1">已知运算项，求得数</option>
-                                                            <option value="2">已知得数，求运算项</option>
-                                                        </select>
+                                                    <label class="col-sm-3 control-label">生成的括号对数：</label>
+                                                    <div class="input-group col-sm-5">
+                                                        <div class="input-group-addon ">至少</div>
+                                                        <input :disabled="!parentheses.enabled" type="number" class="form-control" v-model="parentheses.min"  title="最小值" />
+                                                        <div class="input-group-addon">对</div>
+                                                        <div class="input-group-addon">最多</div>
+                                                        <input :disabled="!parentheses.enabled" type="number" class="form-control" v-model="parentheses.max" title="最大值" />
+                                                        <div class="input-group-addon">对</div>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label class="col-sm-2 control-label"></label>
+                                                        <label class="col-sm-3 control-label"></label>
+                                                        <div class="input-group col-sm-4">
+                                                            <div class="checkbox form-control">
+                                                                <label>
+                                                                    <input type="checkbox" /> 随机时尽量保证括号括得有意义
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-sm-3 control-label"></label>
+                                                        <div class="input-group col-sm-4">
+                                                            <div class="checkbox form-control">
+                                                                <label>
+                                                                    <input type="checkbox" v-model="exact_parentheses"/> 精确指定括号生成位置
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <div v-if="isadd||issub||ismul||isdiv" class="form-group" v-for="(rg, i) in range_op">
+                                                    <label class="col-sm-3 control-label">运算符#{{i+1}}精确设置：</label>
+                                                    <div class="input-group col-sm-7">
+                                                        <div class="btn-group" data-toggle="buttons">
+                                                            <label v-if="isadd" class="btn " :class="{'btn-default':!rg.add, 'btn-info':rg.add, active: rg.add}" v-on:click="rg.add=!rg.add">
+                                                                <span class="glyphicon" :class="{'glyphicon-unchecked':!rg.add, 'glyphicon-check': rg.add}" aria-hidden="true"></span>
+                                                                <input type="checkbox" v-mode="rg.add" autocomplete="off"> ＋
+                                                            </label>
+                                                            <label v-if="issub" class="btn " :class="{'btn-default':!rg.sub, 'btn-info':rg.sub, active: rg.sub}" v-on:click="rg.sub=!rg.sub">
+                                                                <span class="glyphicon" :class="{'glyphicon-unchecked':!rg.sub, 'glyphicon-check': rg.sub}" aria-hidden="true"></span>
+                                                                <input type="checkbox" v-model="rg.sub" autocomplete="off"> －
+                                                            </label>
+                                                            <label v-if="ismul" class="btn " :class="{'btn-default':!rg.mul, 'btn-info':rg.mul, active: rg.mul}" v-on:click="rg.mul=!rg.mul">
+                                                                <span class="glyphicon" :class="{'glyphicon-unchecked':!rg.mul, 'glyphicon-check': rg.mul}" aria-hidden="true"></span>
+                                                                <input type="checkbox" autocomplete="off"> &times;
+                                                            </label>
+                                                            <label v-if="isdiv" class="btn " :class="{'btn-default':!rg.div, 'btn-info':rg.div, active: rg.div}" v-on:click="rg.div=!rg.div">
+                                                                <span class="glyphicon" :class="{'glyphicon-unchecked':!rg.div, 'glyphicon-check': rg.div}" aria-hidden="true"></span>
+                                                                <input type="checkbox" autocomplete="off"> &div;
+                                                            </label>
+                                                            <label class="btn btn-default" :class="{active: rg.all}" v-on:click="rg.add=rg.sub=rg.mul=rg.div=rg.all=!rg.all">
+                                                                <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+                                                                <input type="checkbox" autocomplete="off"> 全选
+                                                            </label>
+                                                            <label v-if="itemcount>2 && exact_parentheses" class="btn " :class="{'btn-default':!rg.parentheses, 'btn-info':rg.parentheses, active: rg.parentheses}" v-on:click="rg.parentheses=!rg.parentheses">
+                                                                <span class="glyphicon" :class="{'glyphicon-unchecked':!rg.parentheses, 'glyphicon-check': rg.parentheses}" aria-hidden="true"></span>
+                                                                <input type="checkbox" autocomplete="off"> （括号）
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label"></label>
                                                     <div class="input-group col-sm-4">
-                                                        <select v-if="'2'==rule" class="form-control" v-model="whichcond">
-                                                            <option value="">随机求运算项</option>
-                                                            <template v-for="(rg, i) in range_add">
-                                                                <option :value="i">求运算项 {{i+1}}</option>
-                                                            </template>
-                                                        </select>
+                                                        <div class="checkbox form-control" >
+                                                            <label>
+                                                                <input type="checkbox" /> 相邻的运算符不能相同
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label"></label>
+                                                    <div class="input-group col-sm-4">
+                                                        <div class="checkbox form-control">
+                                                            <label>
+                                                                <input type="checkbox" /> 加法和减法不相邻
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label"></label>
+                                                    <div class="input-group col-sm-4">
+                                                        <div class="checkbox form-control">
+                                                            <label>
+                                                                <input type="checkbox" /> 乘法和除法不相邻
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -157,7 +233,7 @@
                                     </div>
                                     <div class="tab-pane" id="tab-add" v-if="isadd">
                                         <div class="form-group">
-                                            <label class="col-sm-2 control-label">加法进位设置：</label>
+                                            <label class="col-sm-3 control-label">加法进位设置：</label>
                                             <div class="input-group col-sm-4">
                                                 <select name="carry" class="form-control" v-model="carry">
                                                     <option value="random" selected>随机决定是否生成带进位的加法题</option>
@@ -167,7 +243,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group" v-for="(rg, i) in range_add">
-                                            <label class="col-sm-2 control-label">运算项{{i+1}}范围：</label>
+                                            <label class="col-sm-3 control-label">运算项#{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
                                                 <input type="number" class="form-control" v-model="rg.min" title="最小值" />
                                                 <div class="input-group-addon">-</div>
@@ -175,17 +251,19 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="col-sm-2 control-label">得数范围：</label>
+                                            <label class="col-sm-3 control-label">得数范围：</label>
                                             <div class="input-group col-sm-4">
-                                                <input type="number" class="form-control" v-model="result_add.min" title="最小值" />
+                                                <input type="number" class="form-control" v-model="result_add.min"
+                                                    title="最小值" />
                                                 <div class="input-group-addon">-</div>
-                                                <input type="number" class="form-control" v-model="result_add.max" title="最大值" />
+                                                <input type="number" class="form-control" v-model="result_add.max"
+                                                    title="最大值" />
                                             </div>
                                         </div>
                                     </div>
                                     <div class="tab-pane" id="tab-sub" v-if="issub">
                                         <div class="form-group">
-                                            <label class="col-sm-2 control-label">减法借位设置：</label>
+                                            <label class="col-sm-3 control-label">减法借位设置：</label>
                                             <div class="input-group col-sm-4">
                                                 <select name="borrow" class="form-control" v-model="borrow">
                                                     <option value="random" selected>随机决定是否生成带借位的减法题</option>
@@ -195,7 +273,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group" v-for="(rg, i) in range_sub">
-                                            <label class="col-sm-2 control-label">运算项{{i+1}}范围：</label>
+                                            <label class="col-sm-3 control-label">运算项#{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
                                                 <input type="number" class="form-control" v-model="rg.min" title="最小值" />
                                                 <div class="input-group-addon">-</div>
@@ -203,17 +281,19 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="col-sm-2 control-label">得数范围：</label>
+                                            <label class="col-sm-3 control-label">得数范围：</label>
                                             <div class="input-group col-sm-4">
-                                                <input type="number" class="form-control" v-model="result_sub.min" title="最小值" />
+                                                <input type="number" class="form-control" v-model="result_sub.min"
+                                                    title="最小值" />
                                                 <div class="input-group-addon">-</div>
-                                                <input type="number" class="form-control" v-model="result_sub.max" title="最大值" />
+                                                <input type="number" class="form-control" v-model="result_sub.max"
+                                                    title="最大值" />
                                             </div>
                                         </div>
                                     </div>
                                     <div class="tab-pane" id="tab-mul" v-if="ismul">
                                         <div class="form-group" v-for="(rg, i) in range_mul">
-                                            <label class="col-sm-2 control-label">运算项{{i+1}}范围：</label>
+                                            <label class="col-sm-3 control-label">运算项#{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
                                                 <input type="number" class="form-control" v-model="rg.min" title="最小值" />
                                                 <div class="input-group-addon">-</div>
@@ -221,17 +301,19 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="col-sm-2 control-label">得数范围：</label>
+                                            <label class="col-sm-3 control-label">得数范围：</label>
                                             <div class="input-group col-sm-4">
-                                                <input type="number" class="form-control" v-model="result_mul.min" title="最小值" />
+                                                <input type="number" class="form-control" v-model="result_mul.min"
+                                                    title="最小值" />
                                                 <div class="input-group-addon">-</div>
-                                                <input type="number" class="form-control" v-model="result_mul.max" title="最大值" />
+                                                <input type="number" class="form-control" v-model="result_mul.max"
+                                                    title="最大值" />
                                             </div>
                                         </div>
                                     </div>
                                     <div class="tab-pane" id="tab-div" v-if="isdiv">
                                         <div class="form-group">
-                                            <label class="col-sm-2 control-label">整除余数设置：</label>
+                                            <label class="col-sm-3 control-label">整除余数设置：</label>
                                             <div class="input-group col-sm-4">
                                                 <select name="nomod" class="form-control" v-model="nomod">
                                                     <option value="random" selected>随机决定是否生成带余数的除法题</option>
@@ -241,7 +323,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group" v-for="(rg, i) in range_div">
-                                            <label class="col-sm-2 control-label">运算项{{i+1}}范围：</label>
+                                            <label class="col-sm-3 control-label">运算项#{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
                                                 <input type="number" class="form-control" v-model="rg.min" title="最小值" />
                                                 <div class="input-group-addon">-</div>
@@ -249,11 +331,13 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="col-sm-2 control-label">得数范围：</label>
+                                            <label class="col-sm-3 control-label">得数范围：</label>
                                             <div class="input-group col-sm-4">
-                                                <input type="number" class="form-control" v-model="result_div.min" title="最小值" />
+                                                <input type="number" class="form-control" v-model="result_div.min"
+                                                    title="最小值" />
                                                 <div class="input-group-addon">-</div>
-                                                <input type="number" class="form-control" v-model="result_div.max" title="最大值" />
+                                                <input type="number" class="form-control" v-model="result_div.max"
+                                                    title="最大值" />
                                             </div>
                                         </div>
                                     </div>
@@ -288,10 +372,10 @@
                                             <div class="input-group">
                                                 <input type="number" class="form-control" name="count" v-model="count" />
                                                 <div class="input-group-addon">道</div>
-                                                <button type="button" class="btn btn-warning" data-toggle="modal"
+                                                <button type="button" class="btn btn-danger" data-toggle="modal"
                                                     data-target="#myModal" style="float:right">
                                                     <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-                                                    详细设置...
+                                                    题型设置...
                                                 </button>
                                             </div>
                                         </div>
