@@ -91,9 +91,9 @@
                                             <option value="1">求得数</option>
                                             <option value="2">求运算项</option>
                                         </select>
-                                        <div v-if="'2'==rule" class="input-group-addon"><span class="glyphicon glyphicon-arrow-right"
+                                        <div class="input-group-addon"><span class="glyphicon glyphicon-arrow-right"
                                                 aria-hidden="true"></span></div>
-                                        <select v-if="'2'==rule" class="form-control" v-model="whichcond">
+                                        <select :disabled="'2'!=rule" class="form-control" v-model="whichcond">
                                             <option value="">随机</option>
                                             <template v-for="(rg, i) in range_add">
                                                 <option :value="i">运算项#{{i+1}}</option>
@@ -136,37 +136,6 @@
                                     <div class="tab-pane active" id="tab-op">
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label class="col-sm-3 control-label">生成的括号对数：</label>
-                                                    <div class="input-group col-sm-5">
-                                                        <div class="input-group-addon ">至少</div>
-                                                        <input :disabled="!parentheses.enabled" type="number" class="form-control" v-model="parentheses.min"  title="最小值" />
-                                                        <div class="input-group-addon">对</div>
-                                                        <div class="input-group-addon">最多</div>
-                                                        <input :disabled="!parentheses.enabled" type="number" class="form-control" v-model="parentheses.max" title="最大值" />
-                                                        <div class="input-group-addon">对</div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                        <label class="col-sm-3 control-label"></label>
-                                                        <div class="input-group col-sm-4">
-                                                            <div class="checkbox form-control">
-                                                                <label>
-                                                                    <input type="checkbox" /> 随机时尽量保证括号括得有意义
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="col-sm-3 control-label"></label>
-                                                        <div class="input-group col-sm-4">
-                                                            <div class="checkbox form-control">
-                                                                <label>
-                                                                    <input type="checkbox" v-model="exact_parentheses"/> 精确指定括号生成位置
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                 <div v-if="isadd||issub||ismul||isdiv" class="form-group" v-for="(rg, i) in range_op">
                                                     <label class="col-sm-3 control-label">运算符#{{i+1}}精确设置：</label>
                                                     <div class="input-group col-sm-7">
@@ -203,7 +172,7 @@
                                                     <div class="input-group col-sm-4">
                                                         <div class="checkbox form-control" >
                                                             <label>
-                                                                <input type="checkbox" /> 相邻的运算符不能相同
+                                                                <input type="checkbox" v-model="diff_operator_adjacent"/> 相邻运算符不相同
                                                             </label>
                                                         </div>
                                                     </div>
@@ -213,7 +182,29 @@
                                                     <div class="input-group col-sm-4">
                                                         <div class="checkbox form-control">
                                                             <label>
-                                                                <input type="checkbox" /> 加法和减法不相邻
+                                                                <input type="checkbox" v-model="dissimilarity_operator_adjacent" /> 加减不相邻，乘除不相邻
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">生成的括号对数：</label>
+                                                    <div class="input-group col-sm-5">
+                                                        <div class="input-group-addon ">至少</div>
+                                                        <input :disabled="!parentheses.enabled" type="number" class="form-control" v-model="parentheses.min"  title="最小值" />
+                                                        <div class="input-group-addon">对</div>
+                                                        <div class="input-group-addon">最多</div>
+                                                        <input :disabled="!parentheses.enabled" type="number" class="form-control" v-model="parentheses.max" title="最大值" />
+                                                        <div class="input-group-addon">对</div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label"></label>
+                                                    <div class="input-group col-sm-4">
+                                                        <div class="checkbox form-control">
+                                                            <label>
+                                                                <input type="checkbox" /> 随机时尽量保证括号括得有意义
                                                             </label>
                                                         </div>
                                                     </div>
@@ -223,25 +214,16 @@
                                                     <div class="input-group col-sm-4">
                                                         <div class="checkbox form-control">
                                                             <label>
-                                                                <input type="checkbox" /> 乘法和除法不相邻
+                                                                <input type="checkbox" v-model="exact_parentheses"/> 精确指定括号生成位置
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
+                                            -->
                                             </div>
                                         </div>
                                     </div>
                                     <div class="tab-pane" id="tab-add" v-if="isadd">
-                                        <div class="form-group">
-                                            <label class="col-sm-3 control-label">加法进位设置：</label>
-                                            <div class="input-group col-sm-4">
-                                                <select name="carry" class="form-control" v-model="carry">
-                                                    <option value="random" selected>随机决定是否生成带进位的加法题</option>
-                                                    <option value="no">不要生成有进位的加法题</option>
-                                                    <option value="all">总是生成带进位的加法题</option>
-                                                </select>
-                                            </div>
-                                        </div>
                                         <div class="form-group" v-for="(rg, i) in range_add">
                                             <label class="col-sm-3 control-label">运算项#{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
@@ -260,18 +242,18 @@
                                                     title="最大值" />
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="tab-pane" id="tab-sub" v-if="issub">
                                         <div class="form-group">
-                                            <label class="col-sm-3 control-label">减法借位设置：</label>
+                                            <label class="col-sm-3 control-label">加法进位设置：</label>
                                             <div class="input-group col-sm-4">
-                                                <select name="borrow" class="form-control" v-model="borrow">
-                                                    <option value="random" selected>随机决定是否生成带借位的减法题</option>
-                                                    <option value="no">不要生成有借位的减法题</option>
-                                                    <option value="all">总是生成带借位的减法题</option>
+                                                <select name="carry" class="form-control" v-model="carry">
+                                                    <option value="random" selected>随机决定是否生成带进位的加法题</option>
+                                                    <option value="no">不要生成有进位的加法题</option>
+                                                    <option value="all">总是生成带进位的加法题</option>
                                                 </select>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="tab-pane" id="tab-sub" v-if="issub">
                                         <div class="form-group" v-for="(rg, i) in range_sub">
                                             <label class="col-sm-3 control-label">运算项#{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
@@ -288,6 +270,16 @@
                                                 <div class="input-group-addon">-</div>
                                                 <input type="number" class="form-control" v-model="result_sub.max"
                                                     title="最大值" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">减法借位设置：</label>
+                                            <div class="input-group col-sm-4">
+                                                <select name="borrow" class="form-control" v-model="borrow">
+                                                    <option value="random" selected>随机决定是否生成带借位的减法题</option>
+                                                    <option value="no">不要生成有借位的减法题</option>
+                                                    <option value="all">总是生成带借位的减法题</option>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
@@ -312,16 +304,6 @@
                                         </div>
                                     </div>
                                     <div class="tab-pane" id="tab-div" v-if="isdiv">
-                                        <div class="form-group">
-                                            <label class="col-sm-3 control-label">整除余数设置：</label>
-                                            <div class="input-group col-sm-4">
-                                                <select name="nomod" class="form-control" v-model="nomod">
-                                                    <option value="random" selected>随机决定是否生成带余数的除法题</option>
-                                                    <option value="no">不要生成有余数的除法题（确保能除尽）</option>
-                                                    <option value="all">总是生成带余数的除法题</option>
-                                                </select>
-                                            </div>
-                                        </div>
                                         <div class="form-group" v-for="(rg, i) in range_div">
                                             <label class="col-sm-3 control-label">运算项#{{i+1}}范围：</label>
                                             <div class="input-group col-sm-4">
@@ -338,6 +320,16 @@
                                                 <div class="input-group-addon">-</div>
                                                 <input type="number" class="form-control" v-model="result_div.max"
                                                     title="最大值" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">整除余数设置：</label>
+                                            <div class="input-group col-sm-4">
+                                                <select name="nomod" class="form-control" v-model="nomod">
+                                                    <option value="random" selected>随机决定是否生成带余数的除法题</option>
+                                                    <option value="yes">不要生成有余数的除法题（确保能除尽）</option>
+                                                    <option value="all">总是生成带余数的除法题</option>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
