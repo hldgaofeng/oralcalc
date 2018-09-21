@@ -1056,6 +1056,36 @@ var app = new Vue({
 			return items;
 		},
 
+		myfmt2: function(items) {
+			var str = '', head, tail, tmpstr;
+			var w = '' === this.whichcond ? randomInt(0, this.itemcount - 1) : this.whichcond - 0; // 已知得数，随机求某一个条件
+			// 由内向外生成
+			for (var i = items.length - 1; i >= 0; i--) {
+				head = 0 == i ? '' : '(';
+				tail = 0 == i ? '' : ')';
+				if (i == items.length - 1) {
+					if( '2' == this.rule && w == i + 1) tmpstr = items[i].lft + items[i].operator + this.blank(items[i].rgt);
+					else if( '2' == this.rule && w == i + 0) tmpstr = this.blank(items[i].lft) + items[i].operator + items[i].rgt;
+					else tmpstr = items[i].lft + items[i].operator + items[i].rgt;
+					str = head + tmpstr + tail;
+				} else {
+					if ('lft' == items[i].lor) {
+						if( '2' == this.rule && w == i + 0) tmpstr = this.blank(items[i].rgt);
+						else tmpstr = items[i].rgt;
+						str = head + str + items[i].operator + tmpstr + tail;
+					} else {
+						if( '2' == this.rule && w == i + 0) tmpstr = this.blank(items[i].lft);
+						else tmpstr = items[i].lft;
+						str = head + tmpstr + items[i].operator + str + tail;
+					}
+				}
+
+			}
+			// 已知得数，求条件，且第一个数就是被求的条件? 则将该数使用空白代替！
+			str += '=' + ( '1' == this.rule ? this.blank(items[0].result) : items[0].result);
+			return this.myfmt(str);
+		},
+
 		debugOutput: function (items) {
 			var str = '', tmpstr = '';
 			console.info('debugOutput:', items.length, JSON.stringify(items));
@@ -1091,13 +1121,13 @@ var app = new Vue({
 			this.report.borrowcnt = 0; // 借位题数量
 			this.report.exceptcnt = 0; // 异常题数量(由于冲突，未能按规则生成)
 			this.res = [];
-				return this.debugOutput(this.genFormulaItem2());
+				//return this.debugOutput(this.genFormulaItem2());
 			for (var i = 0; i < this.count; i++) {
 				var item = {
-					li: this.genItem()
+					li: this.genFormulaItem2()
+					//li: this.genItem()
 				};
 				this.res.push(item);
-				break;// 测试时只生成一个
 			}
 		},
 
@@ -1317,7 +1347,7 @@ var app = new Vue({
 		},
 
 		myfmt: function (o) {
-			return (o + '').replace('*', '×').replace('/', '÷').replace('+', '＋').replace('-', '－');
+			return (o + '').replace(/\*/g, '×').replace(/\//g, '÷').replace(/\+/g, '＋').replace(/\-/g, '－');
 		}
 
 	}

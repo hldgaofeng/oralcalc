@@ -95,7 +95,7 @@
                                                 aria-hidden="true"></span></div>
                                         <select :disabled="'2'!=rule" class="form-control" v-model="whichcond">
                                             <option value="">随机</option>
-                                            <template v-for="(rg, i) in range_add">
+                                            <template v-for="(rg, i) in Array(itemcount)">
                                                 <option :value="i">运算项#{{i+1}}</option>
                                             </template>
                                         </select>
@@ -497,7 +497,8 @@
                                 <td v-for="c in (cols-0)">
                                     <template v-if="r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))">&nbsp;</template>
                                     <template v-if="(p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1) < res.length">
-                                        <span v-for="o in res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li">{{myfmt(o)}}</span>
+                                        <!--span v-for="o in res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li">{{myfmt(o)}}</span-->
+                                        <span>{{myfmt2(res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li) }}</span>
                                     </template>
                                 </td>
                             </tr>
