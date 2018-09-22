@@ -910,7 +910,14 @@ var app = new Vue({
 			if (ops.length < 1) return '+';
 			if (ops.length == 1) return ops[0];
 			var rnd = parseInt(Math.random() * 1000) % ops.length;
-			return ops[rnd];
+			var ret = ops[rnd];
+			switch(ret) {
+				case '+': this.report.addcnt++; break;
+				case '-': this.report.subcnt++; break;
+				case '*': this.report.mulcnt++; break;
+				case '/': this.report.divcnt++; break;
+			}
+			return ret;
 		},
 
 		// 连加强制进位时，内层比外层每层 大 10? 否则会出现 x + ? + ? = 15 的情况？
@@ -1084,37 +1091,47 @@ var app = new Vue({
 			if ('*' == item.operator) {
 				if( 0 != item.result) {
 					notinarr.push(0); // 注意：要避免产生：0 * ? = 95 的情况？
+					if( min > item.result ) {
+						min = max = item.result;
+						console.warn('    重新修正了范围1（乘法项不能大于结果）：', old_min, old_max, min, max, item.result);
+					} else if (max > item.result) {
+						max = item.result; // 乘法因子不允许超过乘积，否则另一个因子会变成小数
+						if( min > max ) min = max;
+						console.warn('    重新修正了范围（乘法项不能大于结果）：', old_min, old_max, min, max, item.result);
+					}
 				}
-				// if( 'yes' == this.nomod ) {
-				// 	// 生成的数必须能被 item.result 整除，找出所有能被 result 整除的数
-				// 	if( 0 == item.result ) inarr.push(0); // @todo 是否需要 0? 要避免产生： 0 * ? = 95 的情况？
-				// 	// 先在范围内查找是否有可以除尽的
-				// 	var found = false;
-				// 	for(var i = min; i <= max; i ++) {
-				// 		if( item.result % i == 0 ) {
-				// 			found = true;
-				// 			inarr.push(i);
-				// 			inarr.push(i); // 小技巧：加两次被随机到的可能性大些，以尽量减少 1 * n 和 n * 1 的机率
-				// 		}
-				// 	} 
-				// 	if(!found) {
-				// 		console.error('在范围('+min+'~'+max+')内找不到商('+item.result+')的合适乘数！只能超出范围寻找！');
-				// 		for(var i = 1; i <= item.result; i ++) {
-				// 			if( item.result % i == 0 ) {
-				// 				found = true;
-				// 				inarr.push(i);
-				// 				inarr.push(i); // 小技巧：加两次被随机到的可能性大些，以尽量减少 1 * n 和 n * 1 的机率
-				// 			}
-				// 		} 
-				// 	}
-				// }
-				if( min > item.result ) {
-					min = max = item.result;
-					console.warn('    重新修正了范围1（乘法项不能大于结果）：', old_min, old_max, min, max);
-				} else if (max > item.result) {
-					max = item.result; // 乘法因子不允许超过乘积，否则另一个因子会变成小数
-					if( min > max ) min = max;
-					console.warn('    重新修正了范围（乘法项不能大于结果）：', old_min, old_max, min, max);
+				if( 'yes' == this.nomod && 0 != item.result) {
+					// 避免整数了除不尽的情况？
+					// 生成的数必须能被 item.result 整除，找出所有能被 result 整除的数
+					// 先在范围内查找是否有可以除尽的，尽量生成能除尽的
+					var found = false, tarr = [], sqrt_val = Math.sqrt(item.result);
+					for(var i = min; i <= max && i <= sqrt_val; i ++) {
+						if( item.result % i == 0 ) {
+							if( i != 1 && i != item.result ) {
+								found = true;
+								inarr.push(i); // 有非 1 和 本身的 优先，
+							} else {
+								tarr.push(i);
+							}
+						}
+					} 
+					if(!found) {
+						if( tarr.length <= 0 ) {
+							console.error('在范围('+min+'~'+max+')内找不到商('+item.result+')的合适乘数！只能放弃!');
+						} else {
+							// 此时一般此数据是【素数】（质数），没办法了！
+							for(var i = 0; i < tarr.length; i++) {
+								inarr.push(tarr[i]);
+							}
+						}
+						// for(var i = 1; i <= item.result; i ++) {
+						// 	if( item.result % i == 0 ) {
+						// 		found = true;
+						// 		inarr.push(i);
+						// 		inarr.push(i); // 小技巧：加两次被随机到的可能性大些，以尽量减少 1 * n 和 n * 1 的机率
+						// 	}
+						// } 
+					}
 				}
 			}
 
@@ -1164,7 +1181,7 @@ var app = new Vue({
 			if (!index) {
 				index = 0;
 				lor = 'lft';
-				// 1. 首先一次性按要求生成所有的运算符
+				// 1. 首先一次性按用户设置随机生成所有的运算符(因为父层计算范围时需要知道子层的范围)
 				items = [];
 				for (var i = 0; i < this.itemcount - 1; i++) {
 					items[i] = {
@@ -1177,9 +1194,9 @@ var app = new Vue({
 					};
 
 					// @todo 除法要尽量保证除数也在范围内？
-					if( '/' == items[i].operator ) {
-						items[i].lor = 'rgt'; // 总是随机除数？以尽可能避免出现: 80 / 40 = 2 的情况？
-					}
+					// if( '/' == items[i].operator ) {
+					// 	items[i].lor = 'rgt'; // 总是随机除数？以尽可能避免出现: 80 / 40 = 2 的情况？
+					// }
 				}
 			}
 
@@ -1199,9 +1216,13 @@ var app = new Vue({
 				if ('lft' == items[index].lor) {
 					item_lft = child.result; // 左值确定，计算右值
 					item_rgt = this.calcItem2Value(items, items[index], item_lft);
+					// @todo 由于乘法会产生误差：7 * 9 - ? = 65, 63 - ? = 65，这样就出负数了？
+					if( item_rgt < 0 ) item_rgt = 0;
 				} else {
 					item_rgt = child.result; // 右值确定，计算左值
 					item_lft = this.calcItem2Value(items, items[index], item_rgt);
+					// @todo 由于乘法会产生误差：7 * 9 / ? = 65, 63 / ? = 65，这样就出小数了
+					if( item_lft < 0 ) item_lft = 0;
 				}
 			} else {
 				// 这是最后的一层算式：
@@ -1216,8 +1237,9 @@ var app = new Vue({
 				}
 			}
 
+			// @todo: (4*5)/?=7，修正结果后，出现小数：(4×5)÷3=6.666666666666667
 			// 乘法可能有除不尽的情况，此时重新修正一下得数，以供上级使用？
-			var real_result = eval(item_lft + items[index].operator + item_rgt);
+			var real_result = eval('('+item_lft+')' + items[index].operator + '('+item_rgt+')');
 			if ( real_result != items[index].result ) {
 				console.warn('    第', index, '层结果与之前随机生成的结果', items[index].result, '不一致，已经重新设置为新结果：', real_result);
 				items[index].result = real_result;
@@ -1515,7 +1537,7 @@ var app = new Vue({
 		},
 
 		blank: function (v) {
-			return '___';
+			return v;//'___';
 		},
 
 		myfmt: function (o) {
