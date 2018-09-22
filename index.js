@@ -1537,7 +1537,7 @@ var app = new Vue({
 		},
 
 		blank: function (v) {
-			return v;//'___';
+			return '___';
 		},
 
 		myfmt: function (o) {
