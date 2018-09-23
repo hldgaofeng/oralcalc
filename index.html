@@ -187,6 +187,26 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">生成策略设置：</label>
+                                            <div class="input-group col-sm-4">
+                                                <select class="form-control" v-model="strategy">
+                                                    <option value="random" selected>随机决定</option>
+                                                    <option value="lft">先左后右</option>
+                                                    <option value="rgt">先右后左</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label"></label>
+                                                    <div class="input-group col-sm-4">
+                                                        <div class="checkbox form-control">
+                                                            <label>
+                                                                <input type="checkbox" v-model="parentheses.autofix" /> 尽量保证括号括得有意义
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <!--
                                                 <div class="form-group">
                                                     <label class="col-sm-3 control-label">生成的括号对数：</label>
@@ -197,16 +217,6 @@
                                                         <div class="input-group-addon">最多</div>
                                                         <input :disabled="!parentheses.enabled" type="number" class="form-control" v-model="parentheses.max" title="最大值" />
                                                         <div class="input-group-addon">对</div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="col-sm-3 control-label"></label>
-                                                    <div class="input-group col-sm-4">
-                                                        <div class="checkbox form-control">
-                                                            <label>
-                                                                <input type="checkbox" /> 随机时尽量保证括号括得有意义
-                                                            </label>
-                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
@@ -497,8 +507,7 @@
                                 <td v-for="c in (cols-0)">
                                     <template v-if="r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))">&nbsp;</template>
                                     <template v-if="(p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1) < res.length">
-                                        <!--span v-for="o in res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li">{{myfmt(o)}}</span-->
-                                        <span>{{myfmt2(res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li) }}</span>
+                                        <span>{{formulaToString(res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li) }}</span>
                                     </template>
                                 </td>
                             </tr>
