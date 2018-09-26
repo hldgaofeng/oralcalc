@@ -507,10 +507,10 @@
                     <td style="border: 0px solid;">
                         <!-- 小表格是当前页的所有试题 -->
                         <table :style="{fontFamily:fontfamily, fontSize:fontsize+'px'}" width="100%" :cellPadding="cellPadding"
-                            :cellSpacing="cellSpacing">
+                            :cellSpacing="cellSpacing" class="mytable">
                             <tr v-for="r in (appendemptyrows ? (pagerows - 0) : Math.min(pagerows, parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))))"
                                 :class="{printonly: r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))}">
-                                <td v-for="c in (cols-0)">
+                                <td :style="{padding:cellSpacing+'px '+cellPadding+'px'}" v-for="c in (cols-0)" >
                                     <template v-if="r > parseInt((res.length - (p - 1) * (pagerows-0) * (cols-0) + (cols - 1)) / (cols-0))">&nbsp;</template>
                                     <template v-if="(p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1) < res.length">
                                         <span>{{formulaToString(res[ (p-1) * (pagerows-0) * (cols-0) + (r-1) * (cols-0) + (c - 1)].li) }}</span>
