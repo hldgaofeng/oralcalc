@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>口算题生成程序</title>
+    <title>口算题生成器</title>
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="index.css">
     <script src="vue.min.js"></script>
@@ -23,15 +23,6 @@ var _hmt = _hmt || [];
 </head>
 
 <body>
-    <!--[if IE]>
-<OBJECT id="WebBrowser" height="0" width="0" classid="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2" VIEWASTEXT style="display:none"></OBJECT>
-<![endif]-->
-    <!--
-<input onclick="document.all.WebBrowser.ExecWB(6,1)" type="button" value="打印">
-<input onclick="document.all.WebBrowser.ExecWB(6,6)" type="button" value="直接打印">
-<input onclick="document.all.WebBrowser.ExecWB(8,1)" type="button" value="页面设置">
-<input onclick="document.all.WebBrowser.ExecWB(7,1)" type="button" value="打印预览">
--->
     <div id="app" class="container" v-cloak>
         <div class="cmdbar noprint">
             <!-- Modal -->
@@ -48,8 +39,8 @@ var _hmt = _hmt || [];
                                 <div class="form-group">
                                     <label class="col-sm-2 control-label">快速设置：</label>
                                     <div class="input-group col-sm-8">
-                                        <select name="level" class="form-control" disabled>
-                                            <option value="">【快捷选题型择（暂未开放）】</option>
+                                        <select name="level" class="form-control">
+                                            <option value="">快捷题型选择</option>
                                             <option value="20">20 以内整数加减法</option>
                                             <option value="100n">100 以内加减法不进/借位</option>
                                             <option value="100+1">100 以内进位加法(1 位数)</option>
@@ -369,8 +360,7 @@ var _hmt = _hmt || [];
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <span class="glyphicon glyphicon-th-large" aria-hidden="true"></span>
-                            <b>小学生口算题自动生成程序 V1.1 by <a style="color:white;" href="https://www.imgxw.com">&copy;高大科技</a></b>
-                            <span class="badge" style="float:right">访客数：{{mycounter}}</span>
+                            <b>小学口算题自动生成器 V1.2 by ahgan</b>
                         </div>
                         <div class="panel-body">
 
@@ -397,32 +387,6 @@ var _hmt = _hmt || [];
                                             <div class="input-group">
                                                 <input type="number" class="form-control" name="cols" v-model="cols" />
                                                 <div class="input-group-addon">列</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label class="">每页行数：</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" name="count" v-model="pagerows" />
-                                                <span class="input-group-addon">(仅IE有效)
-                                                    共 {{parseInt((res.length + (cols-0) - 1) / (cols-0))}} 行
-                                                    {{parseInt(((parseInt(res.length + (cols-0) - 1) / (cols-0)) +
-                                                    (pagerows -
-                                                    1)) / (pagerows - 0))}} 页
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label class=""></label>
-                                            <div class="input-group">
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" v-model="appendemptyrows" /> 尾部补空行
-                                                    </label>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -464,30 +428,16 @@ var _hmt = _hmt || [];
                             </form>
                         </div>
                         <div class="panel-footer " role="alert">
-                            <span style="display: none">
-                                <input type="text" v-if="!is_login" placeholder="用户名" v-model="username" />
-                                <input type="password" v-if="!is_login" placeholder="密码" v-model="password" />
-                                <button @click="login" v-if="!is_login">登录</button>
-                                <button @click="register" v-if="!is_login">注册</button>
-                            </span>
-                            <span v-if="is_login">您好，{{curr_user().get('username')}}</span>
-                            <button @click="logout" v-if="is_login">注销</button>
                             <button @click="doGen" class="btn btn-danger" style="font-weight:bold;cursor:hand;">
                                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                                 立即生成！
                             </button>
-                            <!--[if IE]>
-            <input onclick="document.all.WebBrowser.ExecWB(7,1)" type="button" value="打印预览">
-            <![endif]-->
                             <button @click="doPrint" class="btn btn-success" style="font-weight:bold;cursor:pointer;">
                                 <span class="glyphicon glyphicon-print" aria-hidden="true"></span>
                                 打印试题
                             </button>
                             <span style="float:right">
-                            <a target="_blank" href="https://github.com/hldgaofeng/oralcalc/issues">
-                                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                                反馈问题</a>
-                            <a href="mailto:hldgaofeng@qq.com">
+                            <a href="mailto:ahgansky@gmail.com">
                                 <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
                                 联系作者</a></span>
                         </div>
@@ -505,8 +455,8 @@ var _hmt = _hmt || [];
                 <tr>
                     <th :colspan="cols" style="text-align:center;">
                         <div class="print-repeat" contenteditable="true">
-                            <h3>口算（100以内加减法混合运算）</h3>
-                            姓名：__________ 日期：____月____日 时间：________ 对题：____道<br /><br />
+                            <h3>小学口算题</h3>
+                            姓名：__________    日期：____月____日    时间：________    对题：____道<br /><br />
                         </div>
                     </th>
                 </tr>
@@ -544,6 +494,15 @@ var _hmt = _hmt || [];
     <script src="bootstrap/js/jquery-3.3.1.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <script src="index.js"></script>
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?dfe4061c940141e51d6883dee101cf76";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>        
 </body>
 
 </html>

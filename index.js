@@ -179,7 +179,6 @@ Bmob.initialize("cb918bec30eca29246f7101f5ffebafe", "bc68d3c114c13ec55fe79fbb7df
 var app = new Vue({
 	el: '#app',
 	data: {
-		mycounter: 0,
 		username: '',
 		password: '',
 		is_login: false,
@@ -248,8 +247,6 @@ var app = new Vue({
 	},
 	created: function () {
 		this.itemcount = 3;
-		this.is_login = this.curr_user() ? true : false;
-		this.myCounter();
 	},
 	watch: {
 		count: function (val, oldval) {
@@ -1504,30 +1501,6 @@ var app = new Vue({
 				}
 			});
 
-		},
-
-		myCounter: function () {
-			var self = this;
-			var GameScore = Bmob.Object.extend("GameScore");
-			var query = new Bmob.Query(GameScore);
-			query.get('37bb7543a4', {
-				success: function (object) {
-					// The object was retrieved successfully.
-					self.mycounter = object.get("mycounter");
-					object.increment("mycounter");
-					object.save(null, {
-						success: function (objectUpdate) {
-							self.mycounter = objectUpdate.get("mycounter");
-						},
-						error: function (model, error) {
-							alert("create object fail");
-						}
-					});
-				},
-				error: function (object, error) {
-					//alert("query object fail");
-				}
-			});
 		},
 
 		doEditData: function (obj_id) {
