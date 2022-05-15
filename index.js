@@ -1375,9 +1375,22 @@ var app = new Vue({
 				}
 			}
 
-			// @todo: (4*5)/?=7，修正结果后，出现小数：(4×5)÷3=6.666666666666667
+			// @fixed: (4*5)/?=7，修正结果后，出现小数：(4×5)÷3=6.666666666666667
 			// 乘法可能有除不尽的情况，此时重新修正一下得数，以供上级使用？
-			var real_result = eval('('+item_lft+')' + items[index].operator + '('+item_rgt+')');
+			var real_result = eval('(' + item_lft + ')' + items[index].operator + '(' + item_rgt + ')');
+			if (items[index].operator == "/") {
+				var intVal = parseInt(real_result);
+				if (intVal < real_result) {
+					if (index != 0) {
+						//中间层不允许出现余数
+						item_lft = intVal * item_rgt;
+					} else {
+						//最外层可以有余数
+						items[index].rem = item_lft - (intVal * item_rgt);
+					}
+					real_result = intVal;
+				}
+			}
 			if ( real_result != items[index].result ) {
 				setWarning('    第', index, '层结果与之前随机生成的结果', items[index].result, '不一致，已经重新设置为新结果：', real_result);
 				items[index].result = real_result;
@@ -1427,7 +1440,10 @@ var app = new Vue({
 				}
 			}
 			// 已知得数，求条件，且第一个数就是被求的条件? 则将该数使用空白代替！
-			str += '＝' + ( '1' == this.rule ? this.blank(items[0].result) : items[0].result);
+			str += '＝' + ('1' == this.rule ? this.blank(items[0].result) : items[0].result);
+			if ('1' != this.rule && items[0].rem && items[0].rem > 0) {
+				str += "..." + items[0].rem;
+			}
 			return str;
 		},
 
